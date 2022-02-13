@@ -19,7 +19,6 @@ export const GlobalContextProvider = ({ children }) => {
     setCtrlKey(cKey);
   }, []);
   const globalKeyUpListener = useCallback((e) => {
-    const key = e.key;
     const sKey = e.shiftKey;
     const aKey = e.altKey;
     const cKey = e.ctrlKey;
