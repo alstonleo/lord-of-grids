@@ -1,0 +1,41 @@
+.ag-theme-balham {
+  height: 100%;
+  width: 100%;
+}
+.ag-theme-balham .ag-row-selected {
+  background-color: #fdce57 !important;
+  z-index: 20 !important;
+}
+.ag-theme-balham .ag-root-wrapper {
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 4px;
+}
+.ag-theme-balham .ag-row-selected .ag-cell {
+  font-size: 17px !important;
+}
+.ag-theme-balham .ag-ltr .ag-cell {
+  display: flex !important;
+  align-items: center !important;
+  padding: 5px;
+}
+.ag-theme-balham .ag-cell-inline-editing {
+  background-color: #fdce57 !important;
+  border: none !important;
+  height: 100%;
+}
+.ag-theme-balham .ag-row-selected .ag-editable-cell {
+  height: calc(100% - 10px);
+  width: calc(100% - 20px);
+  background-color: #fdeba4;
+  border-radius: 4px;
+  position: absolute;
+  top: 0;
+  padding: 0 10px;
+  margin: 5px 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+}

@@ -19,9 +19,11 @@ const theme = createTheme({
   size: {
     small: {
       height: 27,
+      labelTop: -5,
     },
     medium: {
       height: 34,
+      labelTop: -10,
     },
   },
   components: {
@@ -33,21 +35,22 @@ const theme = createTheme({
             height: theme.size[ownerState.size].height,
             justifyContent: "center",
             alignItems: "center",
-            background: ownerState.InputProps.readOnly
-              ? "#e0e0e0"
-              : "transparent",
+            background: ownerState.InputProps.readOnly ? "#e0e0e0" : "white",
           };
         },
       },
     },
     MuiInputLabel: {
       styleOverrides: {
-        root: {
-          color: "black",
-          top: -7.5,
-          "&.Mui-focused": {
+        root: ({ ownerState, theme }) => {
+          return {
             color: "black",
-          },
+            top: theme.size[ownerState.size].labelTop,
+            "&.Mui-focused": {
+              color: "black",
+            },
+            fontSize: 14,
+          };
         },
         shrink: {
           top: 0,
@@ -55,18 +58,13 @@ const theme = createTheme({
           padding: "0 1px",
           fontWeight: "bold",
           lineHeight: "1em",
+          fontSize: 17,
         },
       },
     },
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          // ":read-only": {
-          //   background: "#e0e0e0",
-          //   "&.Mui-focused": {
-          //     background: "#e0e0e0",
-          //   },
-          // },
           height: "100%",
           border: "none",
           "&.Mui-focused": {
@@ -78,6 +76,11 @@ const theme = createTheme({
         },
         notchedOutline: {
           border: "1px solid black",
+        },
+        input: {
+          "::placeholder": {
+            fontSize: 11.5,
+          },
         },
       },
     },

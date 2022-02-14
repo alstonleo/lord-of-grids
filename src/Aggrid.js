@@ -2,8 +2,11 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/dist/styles/ag-grid.min.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.min.css";
+import "./Aggrid.css";
 import { Card } from "@mui/material";
-import GlobalContext from "./GlobalContext";
+import GlobalContext from "./common/GlobalContext";
+import CellTextEditor from "./common/CellTextEditor";
+import CellSelectEditor from "./common/CellSelectEditor";
 
 const Aggrid = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,10 +38,44 @@ const Aggrid = () => {
       field: "name",
     },
     {
-      headerName: "Wand",
-      field: "wand",
+      headerName: "Alternate Names",
+      field: "alternate_names",
+      editable: true,
+      cellEditor: "cellSelectEditor",
+      cellEditorParams: (params) => {
+        return {
+          options: params.data.alternate_names,
+          getOptionLabel: (option) => option,
+        };
+      },
+      valueGetter: (params) => {
+        return params.data.alternate_names?.length > 0
+          ? params.data.alternate_names[0]
+          : "";
+      },
+      cellRendererFramework: (params) => {
+        return params.value;
+      },
     },
   ];
+  const defaultColDef = {
+    suppressKeyboardEvent: () => true,
+    cellEditor: "cellTextEditor",
+    cellEditorParams: (params) => {
+      return {
+        value: params.value,
+        onChange: (e) => console.log(e.target.value),
+      };
+    },
+    cellRendererFramework: (params) => {
+      return params.colDef.editable ? (
+        <div className="ag-editable-cell">{params.value}</div>
+      ) : (
+        params.value
+      );
+    },
+  };
+
   const onGridReady = (params) => {
     console.log(params.api);
     setApi(params.api);
@@ -153,22 +190,20 @@ const Aggrid = () => {
                 }
                 params.api.getRowNode(0)?.setSelected(true);
               }}
-              onSelectionChanged={(params) => {
-                // params.api.resetRowHeights();
-              }}
               enableRangeSelection={false}
               columnDefs={columnDefs}
               suppressCellSelection={true}
               stopEditingWhenCellsLoseFocus={false}
               suppressHorizontalScroll={true}
-              defaultColDef={{
-                suppressKeyboardEvent: () => true,
+              defaultColDef={defaultColDef}
+              frameworkComponents={{
+                cellTextEditor: CellTextEditor,
+                cellSelectEditor: CellSelectEditor,
               }}
+              getRowHeight={(params) => (params.node.isSelected() ? 40 : 30)}
               getRowStyle={(params) => {
                 if (params.data.checked) {
-                  return {
-                    background: "#c9defc",
-                  };
+                  return { background: "#c9defc" };
                 }
               }}
               onCellClicked={(params) => {
@@ -189,6 +224,9 @@ const Aggrid = () => {
                   }
                 }
                 params.api.getRowNode(currentRow).setSelected(true);
+              }}
+              onSelectionChanged={(params) => {
+                params.api.resetRowHeights();
               }}
             />
           </div>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GlobalContextProvider } from "./GlobalContext";
+import { GlobalContextProvider } from "./common/GlobalContext";
 import { Card } from "@mui/material";
 import TextInput from "./common/TextInput";
 import Aggrid from "./Aggrid";
