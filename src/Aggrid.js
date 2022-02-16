@@ -6,7 +6,7 @@ import "./Aggrid.css";
 import { Card } from "@mui/material";
 import GlobalContext from "./common/GlobalContext";
 import CellTextEditor from "./common/CellTextEditor";
-import CellSelectEditor from "./common/CellSelectEditor";
+import { selectRow } from "./utils/gridUtils";
 
 const Aggrid = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,16 +41,10 @@ const Aggrid = () => {
       headerName: "Alternate Names",
       field: "alternate_names",
       editable: true,
-      cellEditor: "cellSelectEditor",
-      cellEditorParams: (params) => {
-        return {
-          options: params.data.alternate_names,
-          getOptionLabel: (option) => option,
-        };
-      },
       valueGetter: (params) => {
         return params.data.alternate_names?.length > 0
-          ? params.data.alternate_names[0]
+          ? params.data.alternate_names[params.data.selected_alternate_name]
+              .name
           : "";
       },
       cellRendererFramework: (params) => {
@@ -77,22 +71,8 @@ const Aggrid = () => {
   };
 
   const onGridReady = (params) => {
-    console.log(params.api);
     setApi(params.api);
   };
-  // utility
-  const selectRow = (api, rowIndex, column) => {
-    api.ensureIndexVisible(rowIndex, "middle");
-    api.setFocusedCell(rowIndex, column.colId);
-    if (column.colDef.editable) {
-      api.startEditingCell({
-        rowIndex,
-        colKey: column.colId,
-      });
-    }
-    api.getRowNode(rowIndex).setSelected(true);
-  };
-  //end utility
   const gridListener = useCallback(
     (e) => {
       if (!api) return;
@@ -159,7 +139,19 @@ const Aggrid = () => {
   useEffect(() => {
     fetch(`http://hp-api.herokuapp.com/api/characters/house/gryffindor`)
       .then((response) => response.json())
-      .then((data) => setRowData(data));
+      .then((data) => {
+        const temp = data.slice().map((datum) => {
+          return {
+            ...datum,
+            selected_alternate_name: 0,
+            alternate_names: datum.alternate_names.slice().map((an, index) => {
+              return { id: index, name: an };
+            }),
+          };
+        });
+        console.log(temp);
+        setRowData(temp);
+      });
   }, [searchTerm]);
   useEffect(() => {
     document.addEventListener("keyup", gridListener, false);
@@ -173,6 +165,7 @@ const Aggrid = () => {
         <div style={{ height: "100%", width: "100%" }}>
           <div className="ag-theme-balham">
             <AgGridReact
+              reactUi={true}
               onGridReady={onGridReady}
               rowSelection="multiple"
               rowData={rowData}
@@ -198,7 +191,6 @@ const Aggrid = () => {
               defaultColDef={defaultColDef}
               frameworkComponents={{
                 cellTextEditor: CellTextEditor,
-                cellSelectEditor: CellSelectEditor,
               }}
               getRowHeight={(params) => (params.node.isSelected() ? 40 : 30)}
               getRowStyle={(params) => {

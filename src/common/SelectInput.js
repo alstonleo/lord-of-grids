@@ -31,12 +31,16 @@ const SelectInput = React.forwardRef((props, ref) => {
     freeSolo = false,
     autoHighlight = true,
     disableClearable = true,
-    blurOnSelect = true,
+    blurOnSelect = false,
     onChange = () => {},
     size = "medium",
     name,
-    value = null,
+    value,
     onInputChange = () => {},
+    getOptionLabel,
+    isOptionEqualToValue,
+    readOnly = false,
+    open,
   } = props;
   const [controlledValue, setControlledValue] = useState(value);
   useEffect(() => {
@@ -53,6 +57,11 @@ const SelectInput = React.forwardRef((props, ref) => {
         autoHighlight={autoHighlight}
         disableClearable={disableClearable}
         blurOnSelect={blurOnSelect}
+        getOptionLabel={getOptionLabel}
+        value={controlledValue}
+        isOptionEqualToValue={isOptionEqualToValue}
+        readOnly={readOnly}
+        open={open}
         onChange={(event, newValue) => {
           setControlledValue(newValue);
           onChange(event, newValue);
@@ -60,7 +69,6 @@ const SelectInput = React.forwardRef((props, ref) => {
         onInputChange={(event, value, reason) => {
           onInputChange(event, value, reason);
         }}
-        value={controlledValue}
         renderInput={(params) => {
           return (
             <TextInput
