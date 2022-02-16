@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { GlobalContextProvider } from "./common/GlobalContext";
 import { Card } from "@mui/material";
 import TextInput from "./common/TextInput";
-import Aggrid from "./Aggrid";
+import MainGrid from "./MainGrid";
 import "./App.css";
 
 function App() {
@@ -39,7 +39,7 @@ function App() {
             />
           </div>
           <div style={{ width: "100%", height: "95%" }}>
-            <Aggrid />
+            <MainGrid />
           </div>
         </div>
       </Card>
