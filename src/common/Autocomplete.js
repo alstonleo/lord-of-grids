@@ -14,9 +14,12 @@ const Autocomplete = (props) => {
     height = "55%",
     showCloseIcon = true,
     closeAutoComplete = () => {},
+    onEscape = () => {},
   } = props;
   const [margin, setMargin] = useState("0");
+  const { escKey } = useContext(GlobalContext);
   // const { autocompleteExitIcon } = images;
+
   useEffect(() => {
     const widthVal = width.split("%")[0];
     setMargin(`0 ${(100 - widthVal) / 2}%`);
@@ -27,6 +30,10 @@ const Autocomplete = (props) => {
       setAutocompleteOpen(false);
     };
   }, [show, setAutocompleteOpen]);
+  useEffect(() => {
+    console.log(escKey);
+    if (escKey) onEscape();
+  }, [escKey, onEscape]);
   return ReactDom.createPortal(
     <Slide direction="up" in={show} timeout={100} mountOnEnter unmountOnExit>
       <Card

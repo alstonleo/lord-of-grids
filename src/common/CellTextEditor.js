@@ -30,10 +30,9 @@ const CellTextEditor = forwardRef((props, ref) => {
   return (
     <TextInput
       ref={cellref}
-      value={controlledValue}
       onChange={changeHandler}
       InputProps={{ ...InputProps, style: { background: "white" } }}
-      inputProps={{ ...inputProps }}
+      inputProps={{ ...inputProps, value: controlledValue }}
     />
   );
 });

@@ -11,7 +11,7 @@ import CellTextEditor from "./common/CellTextEditor";
 import CellGridSelect from "./common/CellGridSelect";
 import TextInput from "./common/TextInput";
 import GlobalContext from "./common/GlobalContext";
-import { cellTabbed, selectRow } from "./utils/gridUtils";
+import { cellTabbed, rowDown, rowUp, selectRow } from "./utils/gridUtils";
 const AlternateNamesGridSelectComponent = ({
   rowData,
   columnDefs,
@@ -19,6 +19,7 @@ const AlternateNamesGridSelectComponent = ({
   selectedIndex,
   onTab = () => {},
   onEnter = () => {},
+  onEscape = () => {},
 }) => {
   const { shiftKey } = useContext(GlobalContext);
   const [filterText, setFilterText] = useState("");
@@ -34,6 +35,8 @@ const AlternateNamesGridSelectComponent = ({
         return;
       }
       const currentRow = api.getSelectedNodes()[0]?.rowIndex;
+      if (currentRow === undefined || currentRow === null || currentRow === "")
+        return;
       if (key === "Enter") {
         e.preventDefault();
         onEnter(currentRow, shiftKey);
@@ -41,22 +44,14 @@ const AlternateNamesGridSelectComponent = ({
       }
       if (key === "ArrowUp") {
         e.preventDefault();
-        if (api.getDisplayedRowCount() === 0) return;
-        if (currentRow === 0) {
-          return;
-        }
-        selectRow(api, currentRow - 1, columnApi.getAllDisplayedColumns()[0]);
+        rowUp(api);
       }
       if (key === "ArrowDown") {
         e.preventDefault();
-        if (api.getDisplayedRowCount() === 0) return;
-        if (currentRow === api.getDisplayedRowCount() - 1) {
-          return;
-        }
-        selectRow(api, currentRow + 1, columnApi.getAllDisplayedColumns()[0]);
+        rowDown(api);
       }
     },
-    [onTab, shiftKey, api, columnApi]
+    [shiftKey, api, onTab, onEnter]
   );
   useEffect(() => {
     filterRef.current.focus({ preventScroll: true });
@@ -115,10 +110,10 @@ const AlternateNamesGridSelectComponent = ({
   );
 };
 const MainGrid = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [rowData, setRowData] = useState([]);
   const [api, setApi] = useState(null);
   const { shiftKey, ctrlKey, autocompleteOpen } = useContext(GlobalContext);
+  const gridRef = useRef();
   const columnDefs = [
     {
       headerName: "checked",
@@ -178,6 +173,7 @@ const MainGrid = () => {
               .name
           : "";
       },
+      valueSetter: (params) => params.data.alternate_names || [],
     },
   ];
   const defaultColDef = {
@@ -197,7 +193,6 @@ const MainGrid = () => {
       );
     },
   };
-
   const onGridReady = (params) => {
     setApi(params.api);
   };
@@ -205,11 +200,8 @@ const MainGrid = () => {
     cellTabbed(api, shiftKey);
   };
   const enterHandler = (rowIndex, shiftKey) => {
-    // const updated = [...rowData];
-    // updated[api.getSelectedNodes()[0].rowIndex].selected_alternate_name =
-    //   rowIndex;
-    // setRowData(updated);
-    // cellTabbed(api, shiftKey);
+    api.getSelectedNodes()[0].data.selected_alternate_name = rowIndex;
+    cellTabbed(api, shiftKey);
   };
   const gridListener = useCallback(
     (e) => {
@@ -217,42 +209,20 @@ const MainGrid = () => {
       if (key === "Tab" || key === "Enter") {
         e.preventDefault();
         cellTabbed(api, shiftKey);
+        return;
       }
-      const currentRow = api.getSelectedNodes()[0].rowIndex;
       if (key === "ArrowDown") {
         e.preventDefault();
-        if (currentRow === rowData.length - 1) {
-          return;
-        }
-        if (api.gridOptionsWrapper.isRowSelectionMulti() && currentRow !== -1) {
-          let isChecked = api.getRowNode(currentRow).data.checked || false;
-          if (ctrlKey) {
-            isChecked = !isChecked;
-            api.getRowNode(currentRow).data.checked = isChecked;
-            api.redrawRows({ rowNodes: [api.getRowNode(currentRow)] });
-          }
-          api.getRowNode(currentRow).setSelected(false);
-        }
-        selectRow(api, currentRow + 1, api.getFocusedCell().column);
+        rowDown(api, ctrlKey);
+        return;
       }
       if (key === "ArrowUp") {
         e.preventDefault();
-        if (currentRow === 0) {
-          return;
-        }
-        if (api.gridOptionsWrapper.isRowSelectionMulti()) {
-          let isChecked = api.getRowNode(currentRow).data.checked || false;
-          if (ctrlKey) {
-            isChecked = !isChecked;
-            api.getRowNode(currentRow).data.checked = isChecked;
-            api.redrawRows({ rowNodes: [api.getRowNode(currentRow)] });
-          }
-          api.getRowNode(currentRow).setSelected(false);
-        }
-        selectRow(api, currentRow - 1, api.getFocusedCell().column);
+        rowUp(api, ctrlKey);
+        return;
       }
     },
-    [api, rowData, ctrlKey, shiftKey]
+    [api, ctrlKey, shiftKey]
   );
   useEffect(() => {
     fetch(`http://hp-api.herokuapp.com/api/characters/house/gryffindor`)
@@ -272,18 +242,22 @@ const MainGrid = () => {
         });
         setRowData(temp);
       });
-  }, [searchTerm]);
+  }, []);
   useEffect(() => {
-    if (!autocompleteOpen)
+    if (!autocompleteOpen && gridRef.current.isFocused())
       document.addEventListener("keyup", gridListener, false);
     return () => {
       document.removeEventListener("keyup", gridListener, false);
     };
   }, [gridListener, autocompleteOpen]);
+  useEffect(() => {
+    api?.redrawRows();
+  }, [rowData, api]);
   return (
     <>
       <Card sx={{ height: "90vh", width: "100vw" }}>
         <Aggrid
+          ref={gridRef}
           onGridReady={onGridReady}
           rowData={rowData}
           animateRows={false}

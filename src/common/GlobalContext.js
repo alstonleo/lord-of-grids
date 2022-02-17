@@ -6,6 +6,7 @@ export const GlobalContextProvider = ({ children }) => {
   const [shiftKey, setShiftKey] = useState(false);
   const [ctrlKey, setCtrlKey] = useState(false);
   const [altKey, setAltKey] = useState(false);
+  const [escKey, setEscKey] = useState(false);
   const [autocompleteOpen, setAutocompleteOpen] = useState(false);
   const globalKeyDownListener = useCallback((e) => {
     const key = e.key;
@@ -15,6 +16,10 @@ export const GlobalContextProvider = ({ children }) => {
     if (key === "Tab") e.preventDefault();
     if (key === "ArrowDown") e.preventDefault();
     if (key === "ArrowUp") e.preventDefault();
+    if (key === "Escape") {
+      e.preventDefault();
+      setEscKey(true);
+    }
     setShiftKey(sKey);
     setAltKey(aKey);
     setCtrlKey(cKey);
@@ -23,6 +28,10 @@ export const GlobalContextProvider = ({ children }) => {
     const sKey = e.shiftKey;
     const aKey = e.altKey;
     const cKey = e.ctrlKey;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setEscKey(false);
+    }
     setShiftKey(sKey);
     setAltKey(aKey);
     setCtrlKey(cKey);
@@ -41,6 +50,7 @@ export const GlobalContextProvider = ({ children }) => {
         shiftKey,
         altKey,
         ctrlKey,
+        escKey,
         autocompleteOpen,
         setAutocompleteOpen,
       }}

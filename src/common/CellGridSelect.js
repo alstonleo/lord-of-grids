@@ -30,8 +30,16 @@ const CellGridSelect = forwardRef((props, ref) => {
   }, [value]);
   return (
     <>
-      <TextInput ref={cellRef} value={controlledValue} readOnly />
-      <Autocomplete width={autocompleteWidth} show={show}>
+      <TextInput
+        ref={cellRef}
+        inputProps={{ value: controlledValue }}
+        readOnly
+      />
+      <Autocomplete
+        width={autocompleteWidth}
+        show={show}
+        onEscape={() => setShow(false)}
+      >
         {component(componentProps)}
       </Autocomplete>
     </>

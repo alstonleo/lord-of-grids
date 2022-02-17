@@ -1,10 +1,11 @@
-import React from "react";
+import React, { forwardRef, useImperativeHandle, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 // import "ag-grid-enterprise";
 import "ag-grid-community/dist/styles/ag-grid.min.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.min.css";
 import "./Aggrid.css";
-const Aggrid = (props) => {
+import { selectRow } from "../utils/gridUtils";
+const Aggrid = forwardRef((props, ref) => {
   const {
     rowData,
     columnDefs,
@@ -24,11 +25,30 @@ const Aggrid = (props) => {
     onCellClicked = () => {},
     onSelectionChanged = () => {},
   } = props;
+  const [api, setApi] = useState(null);
+  const [columnApi, setColumnApi] = useState(null);
+  const gridReady = (params) => {
+    setApi(params.api);
+    setColumnApi(params.columnApi);
+    onGridReady(params);
+  };
+  useImperativeHandle(ref, () => {
+    return {
+      isFocused: () => {
+        return !!api?.getFocusedCell();
+      },
+      focus: () => {
+        if (api.getDisplayedRowCount() > 0)
+          return selectRow(api, 0, columnApi.getAllDisplayedColumns()[0]);
+      },
+    };
+  });
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <div className="ag-theme-balham">
         <AgGridReact
           reactUi={true}
+          ref={ref}
           rowSelection={rowSelection}
           rowData={rowData}
           singleClickEdit={singleClickEdit}
@@ -41,7 +61,7 @@ const Aggrid = (props) => {
           frameworkComponents={frameworkComponents}
           quickFilterText={quickFilterText}
           animateRows={animateRows}
-          onGridReady={onGridReady}
+          onGridReady={(params) => gridReady(params)}
           onRowDataChanged={(params) => {
             params.api.sizeColumnsToFit();
             onRowDataChanged(params);
@@ -57,6 +77,6 @@ const Aggrid = (props) => {
       </div>
     </div>
   );
-};
+});
 
 export default Aggrid;

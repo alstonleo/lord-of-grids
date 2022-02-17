@@ -1,8 +1,7 @@
+import React from "react";
 import { Autocomplete, createTheme } from "@mui/material";
-import React, { useEffect } from "react";
-import TextInput from "./TextInput";
 import { ThemeProvider } from "@mui/system";
-import { useState } from "react";
+import TextInput from "./TextInput";
 
 const theme = createTheme({
   components: {
@@ -42,10 +41,7 @@ const SelectInput = React.forwardRef((props, ref) => {
     readOnly = false,
     open,
   } = props;
-  const [controlledValue, setControlledValue] = useState(value);
-  useEffect(() => {
-    setControlledValue(value);
-  }, [value]);
+  // const [value, setValue] = useState(initialValue);
   return (
     <ThemeProvider theme={theme}>
       <Autocomplete
@@ -58,12 +54,13 @@ const SelectInput = React.forwardRef((props, ref) => {
         disableClearable={disableClearable}
         blurOnSelect={blurOnSelect}
         getOptionLabel={getOptionLabel}
-        value={controlledValue}
+        // value={value}
+        defaultValue={value}
         isOptionEqualToValue={isOptionEqualToValue}
         readOnly={readOnly}
         open={open}
         onChange={(event, newValue) => {
-          setControlledValue(newValue);
+          // setValue(newValue);
           onChange(event, newValue);
         }}
         onInputChange={(event, value, reason) => {

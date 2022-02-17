@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { createTheme } from "@mui/material/styles";
 import { TextField } from "@mui/material";
 import { ThemeProvider } from "@mui/system";
@@ -88,7 +88,6 @@ const theme = createTheme({
 });
 const TextInput = React.forwardRef((props, ref) => {
   const {
-    value = "",
     autoComplete = "off",
     size = "medium",
     fullWidth = true,
@@ -106,10 +105,6 @@ const TextInput = React.forwardRef((props, ref) => {
     onChange = () => {},
     onClick = () => {},
   } = props;
-  const [controlledValue, setControlledValue] = useState(value);
-  useEffect(() => {
-    setControlledValue(value);
-  }, [value]);
   return (
     <ThemeProvider theme={theme}>
       <TextField
@@ -125,7 +120,6 @@ const TextInput = React.forwardRef((props, ref) => {
         InputProps={{ ...InputProps }}
         InputLabelProps={{ ...InputLabelProps }}
         autoComplete={autoComplete}
-        value={controlledValue}
         placeholder={placeholder}
         type={"text"}
         sx={sx}
