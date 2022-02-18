@@ -38,7 +38,16 @@ const AlternateNamesGridSelectComponent = ({
         return;
       if (key === "Enter") {
         e.preventDefault();
-        onEnter(currentRow, shiftKey);
+        //Needs better logic
+        let selectedIndex = null;
+        rowData.find((d, index) => {
+          if (d.id === api.getSelectedNodes()[0].data.id) {
+            selectedIndex = index;
+            return true;
+          }
+          return false;
+        });
+        if (selectedIndex !== null) onEnter(selectedIndex, shiftKey);
         return;
       }
       if (key === "ArrowUp") {
@@ -50,7 +59,7 @@ const AlternateNamesGridSelectComponent = ({
         rowDown(api);
       }
     },
-    [shiftKey, api, onTab, onEnter]
+    [rowData, shiftKey, api, onTab, onEnter]
   );
   useEffect(() => {
     filterRef.current.focus({ preventScroll: true });
@@ -62,8 +71,9 @@ const AlternateNamesGridSelectComponent = ({
     };
   }, [gridListener]);
   useEffect(() => {
-    if (filterText && api.getDisplayedRowCount() > 0)
+    if (filterText && api.getDisplayedRowCount() > 0) {
       selectRow(api, 0, columnApi.getAllDisplayedColumns()[0]);
+    }
   }, [filterText, api, columnApi]);
   return (
     <div
@@ -172,7 +182,7 @@ const MainGrid = () => {
               .name
           : "";
       },
-      valueSetter: (params) => params.data.alternate_names || [],
+      valueSetter: (params) => null, //params.data.alternate_names || [],
     },
   ];
   const defaultColDef = {
