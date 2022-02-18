@@ -31,7 +31,6 @@ const Autocomplete = (props) => {
     };
   }, [show, setAutocompleteOpen]);
   useEffect(() => {
-    console.log(escKey);
     if (escKey) onEscape();
   }, [escKey, onEscape]);
   return ReactDom.createPortal(

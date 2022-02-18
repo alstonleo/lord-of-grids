@@ -19,7 +19,6 @@ const AlternateNamesGridSelectComponent = ({
   selectedIndex,
   onTab = () => {},
   onEnter = () => {},
-  onEscape = () => {},
 }) => {
   const { shiftKey } = useContext(GlobalContext);
   const [filterText, setFilterText] = useState("");
@@ -34,7 +33,7 @@ const AlternateNamesGridSelectComponent = ({
         onTab(shiftKey);
         return;
       }
-      const currentRow = api.getSelectedNodes()[0]?.rowIndex;
+      const currentRow = api?.getSelectedNodes()[0]?.rowIndex;
       if (currentRow === undefined || currentRow === null || currentRow === "")
         return;
       if (key === "Enter") {
@@ -205,6 +204,7 @@ const MainGrid = () => {
   };
   const gridListener = useCallback(
     (e) => {
+      if (!api) return;
       const key = e.key;
       if (key === "Tab" || key === "Enter") {
         e.preventDefault();

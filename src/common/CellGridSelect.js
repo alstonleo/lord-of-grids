@@ -21,13 +21,13 @@ const CellGridSelect = forwardRef((props, ref) => {
     return { getValue: () => controlledValue, isCancelAfterEnd: () => false };
   });
   useEffect(() => {
+    setControlledValue(value);
+  }, [value]);
+  useEffect(() => {
     return () => {
       setShow(false);
     };
   }, []);
-  useEffect(() => {
-    setControlledValue(value);
-  }, [value]);
   return (
     <>
       <TextInput
@@ -35,11 +35,7 @@ const CellGridSelect = forwardRef((props, ref) => {
         inputProps={{ value: controlledValue }}
         readOnly
       />
-      <Autocomplete
-        width={autocompleteWidth}
-        show={show}
-        onEscape={() => setShow(false)}
-      >
+      <Autocomplete width={autocompleteWidth} show={show}>
         {component(componentProps)}
       </Autocomplete>
     </>
