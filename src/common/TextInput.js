@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createTheme } from "@mui/material/styles";
 import { TextField } from "@mui/material";
 import { ThemeProvider } from "@mui/system";
 import NumberFormat from "react-number-format";
+import GlobalContext from "./GlobalContext";
+
 export const NumberFormatter = React.forwardRef((props, ref) => {
   const { onChange, value, ...filteredProps } = props;
   return (
@@ -105,6 +107,7 @@ const TextInput = React.forwardRef((props, ref) => {
     onChange = () => {},
     onClick = () => {},
   } = props;
+  const { setCurrentFocus } = useContext(GlobalContext);
   return (
     <ThemeProvider theme={theme}>
       <TextField
@@ -125,6 +128,7 @@ const TextInput = React.forwardRef((props, ref) => {
         sx={sx}
         onFocus={(event) => {
           event.target.select();
+          // setCurrentFocus(ref);
           onFocus(event);
         }}
         onChange={onChange}

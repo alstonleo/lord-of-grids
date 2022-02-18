@@ -1,7 +1,13 @@
-export const selectRow = (api, rowIndex, column) => {
+export const selectRow = (api, rowIndex) => {
   api.ensureIndexVisible(rowIndex, "middle");
-  api.getDisplayedRowAtIndex(rowIndex).setSelected(true);
-  if (column?.colDef.editable) {
+  api.getDisplayedRowAtIndex(rowIndex)?.setSelected(true);
+};
+export const focusCell = (api, rowIndex, column) => {
+  api.clearFocusedCell();
+  if (!api.getRowNode(rowIndex).selected) {
+    selectRow(api, rowIndex);
+  }
+  if (column?.colDef?.editable) {
     if (
       api.getFocusedCell()?.rowIndex !== rowIndex &&
       api.getFocusedCell()?.colKey !== column.colId
@@ -17,7 +23,7 @@ export const cellTabbed = (api, shiftKey) => {
   api.deselectAll();
   if (shiftKey) {
     if (api.tabToPreviousCell()) {
-      selectRow(
+      focusCell(
         api,
         api.getFocusedCell().rowIndex,
         api.getFocusedCell().column
@@ -26,12 +32,33 @@ export const cellTabbed = (api, shiftKey) => {
       api.stopEditing();
     }
   } else if (api.tabToNextCell()) {
-    selectRow(api, api.getFocusedCell().rowIndex, api.getFocusedCell().column);
+    focusCell(api, api.getFocusedCell().rowIndex, api.getFocusedCell().column);
   } else {
     api.stopEditing();
   }
 };
-export const rowUp = (api, ctrlKey) => {
+export const cellClicked = (api, rowIndex, column, ctrlKey = false) => {
+  if (column.colDef.editable) focusCell(api, rowIndex, column);
+  if (api.gridOptionsWrapper.isRowSelectionMulti()) {
+    let isChecked = api.getRowNode(rowIndex).data.checked || false;
+    if (ctrlKey) {
+      isChecked = !isChecked;
+      api.getRowNode(rowIndex).data.checked = isChecked;
+      api.redrawRows({
+        rowNodes: [api.getRowNode(rowIndex)],
+      });
+      if (api.getSelectedNodes().length > 1) {
+        api.getRowNode(rowIndex).setSelected(false);
+        return;
+      }
+    }
+  }
+  api.getRowNode(rowIndex).setSelected(true);
+};
+/*
+  column: optional parameter. mandatory if grid has editable cells
+*/
+export const rowUp = (api, ctrlKey = false, column = null) => {
   const currentRow = api.getSelectedNodes()[0].rowIndex;
   if (currentRow === 0) {
     return;
@@ -45,10 +72,13 @@ export const rowUp = (api, ctrlKey) => {
     }
     api.getRowNode(currentRow).setSelected(false);
   }
-  selectRow(api, currentRow - 1, api.getFocusedCell()?.column);
+  if (column) {
+    focusCell(api, currentRow - 1, column);
+    return;
+  }
+  selectRow(api, currentRow - 1);
 };
-export const rowDown = (api, ctrlKey) => {
-  console.log("rowDown");
+export const rowDown = (api, ctrlKey = false, column = null) => {
   const currentRow = api.getSelectedNodes()[0].rowIndex;
   if (currentRow === api.getDisplayedRowCount() - 1) {
     return;
@@ -62,5 +92,9 @@ export const rowDown = (api, ctrlKey) => {
     }
     api.getRowNode(currentRow).setSelected(false);
   }
-  selectRow(api, currentRow + 1, api.getFocusedCell()?.column);
+  if (column) {
+    focusCell(api, currentRow + 1, column);
+    return;
+  }
+  selectRow(api, currentRow + 1);
 };

@@ -8,6 +8,7 @@ export const GlobalContextProvider = ({ children }) => {
   const [altKey, setAltKey] = useState(false);
   const [escKey, setEscKey] = useState(false);
   const [autocompleteOpen, setAutocompleteOpen] = useState(false);
+  const [currentFocus, setCurrentFocus] = useState(null);
   const globalKeyDownListener = useCallback((e) => {
     const key = e.key;
     const sKey = e.shiftKey;
@@ -44,6 +45,9 @@ export const GlobalContextProvider = ({ children }) => {
       document.removeEventListener("keyup", globalKeyUpListener, false);
     };
   }, [globalKeyDownListener, globalKeyUpListener]);
+  useEffect(() => {
+    console.log(currentFocus);
+  }, [currentFocus]);
   return (
     <GlobalContext.Provider
       value={{
@@ -53,6 +57,8 @@ export const GlobalContextProvider = ({ children }) => {
         escKey,
         autocompleteOpen,
         setAutocompleteOpen,
+        currentFocus,
+        setCurrentFocus,
       }}
     >
       {children}

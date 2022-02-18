@@ -1,12 +1,19 @@
-import React, { forwardRef, useImperativeHandle, useState } from "react";
+import React, {
+  forwardRef,
+  useContext,
+  useImperativeHandle,
+  useState,
+} from "react";
 import { AgGridReact } from "ag-grid-react";
 // import "ag-grid-enterprise";
 import "ag-grid-community/dist/styles/ag-grid.min.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.min.css";
 import "./Aggrid.css";
-import { selectRow } from "../utils/gridUtils";
+import { focusCell } from "../utils/gridUtils";
+import GlobalContext from "./GlobalContext";
 const Aggrid = forwardRef((props, ref) => {
   const {
+    id,
     rowData,
     columnDefs,
     defaultColDef,
@@ -16,7 +23,7 @@ const Aggrid = forwardRef((props, ref) => {
     singleClickEdit = true,
     enableRangeSelection = false,
     suppressCellSelection = true,
-    stopEditingWhenCellsLoseFocus = false,
+    stopEditingWhenCellsLoseFocus = true,
     suppressHorizontalScroll = true,
     animateRows = true,
     onGridReady = () => {},
@@ -27,6 +34,7 @@ const Aggrid = forwardRef((props, ref) => {
   } = props;
   const [api, setApi] = useState(null);
   const [columnApi, setColumnApi] = useState(null);
+  const { setCurrentFocus } = useContext(GlobalContext);
   const gridReady = (params) => {
     setApi(params.api);
     setColumnApi(params.columnApi);
@@ -39,7 +47,11 @@ const Aggrid = forwardRef((props, ref) => {
       },
       focus: () => {
         if (api.getDisplayedRowCount() > 0)
-          return selectRow(api, 0, columnApi.getAllDisplayedColumns()[0]);
+          return focusCell(api, 0, columnApi.getAllDisplayedColumns()[0]);
+      },
+      blur: () => {
+        api?.getSelectedNodes()[0]?.setSelected(false);
+        api?.clearFocusedCell();
       },
     };
   });
@@ -48,6 +60,7 @@ const Aggrid = forwardRef((props, ref) => {
       <div className="ag-theme-balham">
         <AgGridReact
           reactUi={true}
+          id={id}
           ref={ref}
           rowSelection={rowSelection}
           rowData={rowData}
@@ -72,6 +85,9 @@ const Aggrid = forwardRef((props, ref) => {
           onSelectionChanged={(params) => {
             params.api.resetRowHeights();
             onSelectionChanged(params);
+          }}
+          onCellFocused={(params) => {
+            // setCurrentFocus(ref);
           }}
         />
       </div>

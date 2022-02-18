@@ -16,22 +16,17 @@ const CellGridSelect = forwardRef((props, ref) => {
   } = props;
   const [show, setShow] = useState(true);
   const [controlledValue, setControlledValue] = useState(value);
-  const cellRef = useRef();
+  const cellref = useRef();
   useImperativeHandle(ref, () => {
     return { getValue: () => controlledValue, isCancelAfterEnd: () => false };
   });
   useEffect(() => {
     setControlledValue(value);
   }, [value]);
-  useEffect(() => {
-    return () => {
-      setShow(false);
-    };
-  }, []);
   return (
     <>
       <TextInput
-        ref={cellRef}
+        ref={cellref}
         inputProps={{ value: controlledValue }}
         readOnly
       />

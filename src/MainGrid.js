@@ -11,7 +11,15 @@ import CellTextEditor from "./common/CellTextEditor";
 import CellGridSelect from "./common/CellGridSelect";
 import TextInput from "./common/TextInput";
 import GlobalContext from "./common/GlobalContext";
-import { cellTabbed, rowDown, rowUp, selectRow } from "./utils/gridUtils";
+import {
+  cellClicked,
+  cellTabbed,
+  focusCell,
+  rowDown,
+  rowUp,
+  selectRow,
+} from "./utils/gridUtils";
+import AppContext from "./AppContext";
 const AlternateNamesGridSelectComponent = ({
   rowData,
   columnDefs,
@@ -72,7 +80,7 @@ const AlternateNamesGridSelectComponent = ({
   }, [gridListener]);
   useEffect(() => {
     if (filterText && api.getDisplayedRowCount() > 0) {
-      selectRow(api, 0, columnApi.getAllDisplayedColumns()[0]);
+      selectRow(api, 0);
     }
   }, [filterText, api, columnApi]);
   return (
@@ -107,7 +115,7 @@ const AlternateNamesGridSelectComponent = ({
           }}
           onRowDataChanged={(params) => {
             if (params.api.getDisplayedRowCount() > 0)
-              selectRow(
+              focusCell(
                 params.api,
                 selectedIndex,
                 params.columnApi.getAllDisplayedColumns()[0]
@@ -121,8 +129,9 @@ const AlternateNamesGridSelectComponent = ({
 const MainGrid = () => {
   const [rowData, setRowData] = useState([]);
   const [api, setApi] = useState(null);
-  const { shiftKey, ctrlKey, autocompleteOpen } = useContext(GlobalContext);
-  const gridRef = useRef();
+  const { shiftKey, ctrlKey, autocompleteOpen, currentFocus } =
+    useContext(GlobalContext);
+  const { gridref } = useContext(AppContext);
   const columnDefs = [
     {
       headerName: "checked",
@@ -182,11 +191,12 @@ const MainGrid = () => {
               .name
           : "";
       },
-      valueSetter: (params) => null, //params.data.alternate_names || [],
+      valueSetter: (/*params*/) => null, //params.data.alternate_names || [],
     },
   ];
   const defaultColDef = {
     suppressKeyboardEvent: () => true,
+    suppressNavigable: (params) => !params.colDef.editable,
     cellEditor: "cellTextEditor",
     cellEditorParams: (params) => {
       return {
@@ -223,11 +233,19 @@ const MainGrid = () => {
       }
       if (key === "ArrowDown") {
         e.preventDefault();
+        if (api.getFocusedCell().column.colDef.editable) {
+          rowDown(api, ctrlKey, api.getFocusedCell().column);
+          return;
+        }
         rowDown(api, ctrlKey);
         return;
       }
       if (key === "ArrowUp") {
         e.preventDefault();
+        if (api.getFocusedCell().column.colDef.editable) {
+          rowUp(api, ctrlKey, api.getFocusedCell().column);
+          return;
+        }
         rowUp(api, ctrlKey);
         return;
       }
@@ -254,35 +272,36 @@ const MainGrid = () => {
       });
   }, []);
   useEffect(() => {
-    if (!autocompleteOpen && gridRef.current.isFocused())
+    if (!autocompleteOpen)
       document.addEventListener("keyup", gridListener, false);
     return () => {
       document.removeEventListener("keyup", gridListener, false);
     };
-  }, [gridListener, autocompleteOpen]);
+  }, [gridListener, autocompleteOpen, gridref]);
   useEffect(() => {
     api?.redrawRows();
   }, [rowData, api]);
+  useEffect(() => {
+    if (currentFocus !== gridref) {
+      gridref.current.blur();
+    }
+  }, [currentFocus, gridref]);
+
   return (
     <>
       <Card sx={{ height: "90vh", width: "100vw" }}>
         <Aggrid
-          ref={gridRef}
+          ref={gridref}
           onGridReady={onGridReady}
           rowData={rowData}
           animateRows={false}
           onRowDataChanged={(params) => {
-            params.api.setFocusedCell(
-              0,
-              params.columnApi.getAllDisplayedColumns()[0].colId
-            );
-            if (params.api.getFocusedCell().column.colDef.editable) {
-              params.api.startEditingCell({
-                rowIndex: 0,
-                colKey: params.columnApi.getAllDisplayedColumns()[0].colId,
-              });
-            }
-            params.api.getRowNode(0)?.setSelected(true);
+            if (params.api.getDisplayedRowCount() > 0)
+              focusCell(
+                params.api,
+                0,
+                params.columnApi.getAllDisplayedColumns()[0]
+              );
           }}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
@@ -296,23 +315,20 @@ const MainGrid = () => {
             }
           }}
           onCellClicked={(params) => {
-            const currentRow = params.api.getFocusedCell().rowIndex;
-            if (params.api.gridOptionsWrapper.isRowSelectionMulti()) {
-              let isChecked =
-                params.api.getRowNode(currentRow).data.checked || false;
-              if (ctrlKey) {
-                isChecked = !isChecked;
-                params.api.getRowNode(currentRow).data.checked = isChecked;
-                params.api.redrawRows({
-                  rowNodes: [params.api.getRowNode(currentRow)],
-                });
-                if (api.getSelectedNodes().length > 1) {
-                  params.api.getRowNode(currentRow).setSelected(false);
-                  return;
-                }
-              }
-            }
-            params.api.getRowNode(currentRow).setSelected(true);
+            // params.column.colDef.editable
+            //   ?
+            cellClicked(
+              params.api,
+              params.node.rowIndex,
+              params.column,
+              ctrlKey
+            );
+            // : cellClicked(
+            //     params.api,
+            //     params.node.rowIndex,
+            //     params.columnApi.getAllDisplayedColumns()[0],
+            //     ctrlKey
+            //   );
           }}
           onSelectionChanged={(params) => {
             params.api.resetRowHeights();
