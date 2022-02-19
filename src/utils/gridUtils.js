@@ -23,7 +23,6 @@ export const cellTabbed = (api, shiftKey) => {
   api.deselectAll();
   if (shiftKey) {
     if (api.tabToPreviousCell()) {
-      console.log(api.getFocusedCell().column);
       focusCell(
         api,
         api.getFocusedCell().rowIndex,

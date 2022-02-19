@@ -66,14 +66,14 @@ const AlternateNamesGridSelectComponent = ({
       }
       if (key === "ArrowUp") {
         e.preventDefault();
-        rowUp(api, null, columnApi.getAllDisplayedColumns()[0]);
+        rowUp(api);
       }
       if (key === "ArrowDown") {
         e.preventDefault();
-        rowDown(api, null, columnApi.getAllDisplayedColumns()[0]);
+        rowDown(api);
       }
     },
-    [shiftKey, api, columnApi, onTab, enterHandler]
+    [shiftKey, api, onTab, enterHandler]
   );
   useEffect(() => {
     filterRef.current.focus({ preventScroll: true });
@@ -324,12 +324,21 @@ const MainGrid = () => {
             }
           }}
           onCellClicked={(params) => {
-            cellClicked(
-              params.api,
-              params.node.rowIndex,
-              params.column,
-              ctrlKey
-            );
+            if (params.column.colDef.editable) {
+              cellClicked(
+                params.api,
+                params.node.rowIndex,
+                params.column,
+                ctrlKey
+              );
+            } else {
+              cellClicked(
+                params.api,
+                params.node.rowIndex,
+                params.columnApi.getColumn("actor"),
+                ctrlKey
+              );
+            }
           }}
           onSelectionChanged={(params) => {
             params.api.resetRowHeights();
