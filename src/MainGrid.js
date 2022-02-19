@@ -33,6 +33,20 @@ const AlternateNamesGridSelectComponent = ({
   const [api, setApi] = useState(null);
   const [columnApi, setColumnApi] = useState(null);
   const filterRef = useRef();
+  const enterHandler = useCallback(
+    (api) => {
+      let selectedIndex = null;
+      rowData.find((d, index) => {
+        if (d.id === api.getSelectedNodes()[0].data.id) {
+          selectedIndex = index;
+          return true;
+        }
+        return false;
+      });
+      if (selectedIndex !== null) onEnter(selectedIndex, shiftKey);
+    },
+    [rowData, shiftKey, onEnter]
+  );
   const gridListener = useCallback(
     (e) => {
       const key = e.key;
@@ -47,27 +61,19 @@ const AlternateNamesGridSelectComponent = ({
       if (key === "Enter") {
         e.preventDefault();
         //Needs better logic
-        let selectedIndex = null;
-        rowData.find((d, index) => {
-          if (d.id === api.getSelectedNodes()[0].data.id) {
-            selectedIndex = index;
-            return true;
-          }
-          return false;
-        });
-        if (selectedIndex !== null) onEnter(selectedIndex, shiftKey);
+        enterHandler(api);
         return;
       }
       if (key === "ArrowUp") {
         e.preventDefault();
-        rowUp(api);
+        rowUp(api, null, columnApi.getAllDisplayedColumns()[0]);
       }
       if (key === "ArrowDown") {
         e.preventDefault();
-        rowDown(api);
+        rowDown(api, null, columnApi.getAllDisplayedColumns()[0]);
       }
     },
-    [rowData, shiftKey, api, onTab, onEnter]
+    [shiftKey, api, columnApi, onTab, enterHandler]
   );
   useEffect(() => {
     filterRef.current.focus({ preventScroll: true });
@@ -121,6 +127,7 @@ const AlternateNamesGridSelectComponent = ({
                 params.columnApi.getAllDisplayedColumns()[0]
               );
           }}
+          onCellClicked={(params) => enterHandler(params.api)}
         />
       </div>
     </div>
@@ -129,6 +136,7 @@ const AlternateNamesGridSelectComponent = ({
 const MainGrid = () => {
   const [rowData, setRowData] = useState([]);
   const [api, setApi] = useState(null);
+  const [columnApi, setColumnApi] = useState(null);
   const { shiftKey, ctrlKey, autocompleteOpen, currentFocus } =
     useContext(GlobalContext);
   const { gridref } = useContext(AppContext);
@@ -214,6 +222,7 @@ const MainGrid = () => {
   };
   const onGridReady = (params) => {
     setApi(params.api);
+    setColumnApi(params.columnApi);
   };
   const tabHandler = (shiftKey) => {
     cellTabbed(api, shiftKey);
@@ -237,7 +246,7 @@ const MainGrid = () => {
           rowDown(api, ctrlKey, api.getFocusedCell().column);
           return;
         }
-        rowDown(api, ctrlKey);
+        rowDown(api, ctrlKey, columnApi.getColumn("actor"));
         return;
       }
       if (key === "ArrowUp") {
@@ -246,11 +255,11 @@ const MainGrid = () => {
           rowUp(api, ctrlKey, api.getFocusedCell().column);
           return;
         }
-        rowUp(api, ctrlKey);
+        rowUp(api, ctrlKey, columnApi.getColumn("actor"));
         return;
       }
     },
-    [api, ctrlKey, shiftKey]
+    [api, columnApi, ctrlKey, shiftKey]
   );
   useEffect(() => {
     fetch(`http://hp-api.herokuapp.com/api/characters/house/gryffindor`)
@@ -315,20 +324,12 @@ const MainGrid = () => {
             }
           }}
           onCellClicked={(params) => {
-            // params.column.colDef.editable
-            //   ?
             cellClicked(
               params.api,
               params.node.rowIndex,
               params.column,
               ctrlKey
             );
-            // : cellClicked(
-            //     params.api,
-            //     params.node.rowIndex,
-            //     params.columnApi.getAllDisplayedColumns()[0],
-            //     ctrlKey
-            //   );
           }}
           onSelectionChanged={(params) => {
             params.api.resetRowHeights();

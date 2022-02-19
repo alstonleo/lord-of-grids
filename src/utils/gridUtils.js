@@ -3,14 +3,14 @@ export const selectRow = (api, rowIndex) => {
   api.getDisplayedRowAtIndex(rowIndex)?.setSelected(true);
 };
 export const focusCell = (api, rowIndex, column) => {
-  api.clearFocusedCell();
+  // api.clearFocusedCell();
   if (!api.getRowNode(rowIndex).selected) {
     selectRow(api, rowIndex);
   }
   if (column?.colDef?.editable) {
     if (
-      api.getFocusedCell()?.rowIndex !== rowIndex &&
-      api.getFocusedCell()?.colKey !== column.colId
+      api.getFocusedCell()?.rowIndex !== rowIndex ||
+      api.getFocusedCell()?.column?.colId !== column?.colId
     )
       api.setFocusedCell(rowIndex, column.colId);
     api.startEditingCell({
@@ -23,6 +23,7 @@ export const cellTabbed = (api, shiftKey) => {
   api.deselectAll();
   if (shiftKey) {
     if (api.tabToPreviousCell()) {
+      console.log(api.getFocusedCell().column);
       focusCell(
         api,
         api.getFocusedCell().rowIndex,
@@ -38,7 +39,6 @@ export const cellTabbed = (api, shiftKey) => {
   }
 };
 export const cellClicked = (api, rowIndex, column, ctrlKey = false) => {
-  if (column.colDef.editable) focusCell(api, rowIndex, column);
   if (api.gridOptionsWrapper.isRowSelectionMulti()) {
     let isChecked = api.getRowNode(rowIndex).data.checked || false;
     if (ctrlKey) {
@@ -51,9 +51,11 @@ export const cellClicked = (api, rowIndex, column, ctrlKey = false) => {
         api.getRowNode(rowIndex).setSelected(false);
         return;
       }
+      api.getRowNode(rowIndex).setSelected(true);
+      return;
     }
   }
-  api.getRowNode(rowIndex).setSelected(true);
+  if (column) focusCell(api, rowIndex, column);
 };
 /*
   column: optional parameter. mandatory if grid has editable cells

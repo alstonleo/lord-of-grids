@@ -23,6 +23,11 @@ const CellGridSelect = forwardRef((props, ref) => {
   useEffect(() => {
     setControlledValue(value);
   }, [value]);
+  useEffect(() => {
+    return () => {
+      setShow(false);
+    };
+  }, []);
   return (
     <>
       <TextInput

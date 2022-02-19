@@ -23,7 +23,7 @@ const Aggrid = forwardRef((props, ref) => {
     singleClickEdit = true,
     enableRangeSelection = false,
     suppressCellSelection = true,
-    stopEditingWhenCellsLoseFocus = true,
+    stopEditingWhenCellsLoseFocus = false,
     suppressHorizontalScroll = true,
     animateRows = true,
     onGridReady = () => {},
@@ -86,6 +86,7 @@ const Aggrid = forwardRef((props, ref) => {
             params.api.resetRowHeights();
             onSelectionChanged(params);
           }}
+          onColumnMoved={(params) => console.log(params)}
           onCellFocused={(params) => {
             // setCurrentFocus(ref);
           }}
