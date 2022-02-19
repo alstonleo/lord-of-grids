@@ -137,8 +137,7 @@ const MainGrid = () => {
   const [rowData, setRowData] = useState([]);
   const [api, setApi] = useState(null);
   const [columnApi, setColumnApi] = useState(null);
-  const { shiftKey, ctrlKey, autocompleteOpen, currentFocus } =
-    useContext(GlobalContext);
+  const { shiftKey, ctrlKey, autocompleteOpen } = useContext(GlobalContext);
   const { gridref } = useContext(AppContext);
   const columnDefs = [
     {
@@ -290,27 +289,24 @@ const MainGrid = () => {
   useEffect(() => {
     api?.redrawRows();
   }, [rowData, api]);
-  useEffect(() => {
-    if (currentFocus !== gridref) {
-      gridref.current.blur();
-    }
-  }, [currentFocus, gridref]);
 
   return (
     <>
       <Card sx={{ height: "90vh", width: "100vw" }}>
         <Aggrid
+          id="main_grid"
           ref={gridref}
           onGridReady={onGridReady}
           rowData={rowData}
           animateRows={false}
           onRowDataChanged={(params) => {
-            if (params.api.getDisplayedRowCount() > 0)
-              focusCell(
-                params.api,
-                0,
-                params.columnApi.getAllDisplayedColumns()[0]
-              );
+            if (params.api.getDisplayedRowCount() > 0) {
+              // focusCell(
+              //   params.api,
+              //   0,
+              //   params.columnApi.getAllDisplayedColumns()[0]
+              // );
+            }
           }}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}

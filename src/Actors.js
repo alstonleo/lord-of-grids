@@ -5,7 +5,6 @@ import TextInput from "./common/TextInput";
 
 const Actors = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  // const { currentFocus } = useContext(GlobalContext);
   const { searchref, genderref } = useContext(AppContext);
   useEffect(() => {
     searchref.current.focus();
@@ -26,10 +25,17 @@ const Actors = () => {
           label="Search"
           id="search"
           placeholder="Enter Search Term"
+          inputProps={{
+            markers: JSON.stringify({
+              right: "gender",
+              down: "main_grid",
+            }),
+          }}
         />
       </div>
       <div style={{ width: "50%", padding: "0 16px" }}>
         <SelectInput
+          id="gender"
           ref={genderref}
           value={{ id: 2, value: "Female" }}
           options={[
@@ -38,6 +44,11 @@ const Actors = () => {
           ]}
           getOptionLabel={(option) => option.value}
           isOptionEqualToValue={(option, value) => option.value === value.value}
+          markers={JSON.stringify({
+            left: "search",
+            right: "main_grid",
+            down: "main_grid",
+          })}
         />
       </div>
     </div>

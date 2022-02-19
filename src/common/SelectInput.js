@@ -40,8 +40,8 @@ const SelectInput = React.forwardRef((props, ref) => {
     isOptionEqualToValue,
     readOnly = false,
     open,
+    markers,
   } = props;
-  // const [value, setValue] = useState(initialValue);
   return (
     <ThemeProvider theme={theme}>
       <Autocomplete
@@ -54,19 +54,18 @@ const SelectInput = React.forwardRef((props, ref) => {
         disableClearable={disableClearable}
         blurOnSelect={blurOnSelect}
         getOptionLabel={getOptionLabel}
-        // value={value}
         defaultValue={value}
         isOptionEqualToValue={isOptionEqualToValue}
         readOnly={readOnly}
         open={open}
         onChange={(event, newValue) => {
-          // setValue(newValue);
           onChange(event, newValue);
         }}
         onInputChange={(event, value, reason) => {
           onInputChange(event, value, reason);
         }}
         renderInput={(params) => {
+          console.log(params);
           return (
             <TextInput
               {...params}
@@ -74,6 +73,7 @@ const SelectInput = React.forwardRef((props, ref) => {
               size={size}
               ref={ref}
               name={name}
+              inputProps={{ ...params.inputProps, markers }}
             />
           );
         }}

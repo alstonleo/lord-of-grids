@@ -1,16 +1,10 @@
-import React, {
-  forwardRef,
-  useContext,
-  useImperativeHandle,
-  useState,
-} from "react";
+import React, { forwardRef, useImperativeHandle, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 // import "ag-grid-enterprise";
 import "ag-grid-community/dist/styles/ag-grid.min.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.min.css";
 import "./Aggrid.css";
 import { focusCell } from "../utils/gridUtils";
-import GlobalContext from "./GlobalContext";
 const Aggrid = forwardRef((props, ref) => {
   const {
     id,
@@ -34,7 +28,6 @@ const Aggrid = forwardRef((props, ref) => {
   } = props;
   const [api, setApi] = useState(null);
   const [columnApi, setColumnApi] = useState(null);
-  const { setCurrentFocus } = useContext(GlobalContext);
   const gridReady = (params) => {
     setApi(params.api);
     setColumnApi(params.columnApi);
@@ -50,7 +43,7 @@ const Aggrid = forwardRef((props, ref) => {
           return focusCell(api, 0, columnApi.getAllDisplayedColumns()[0]);
       },
       blur: () => {
-        api?.getSelectedNodes()[0]?.setSelected(false);
+        api?.deselectAll();
         api?.clearFocusedCell();
       },
     };
@@ -87,9 +80,6 @@ const Aggrid = forwardRef((props, ref) => {
             onSelectionChanged(params);
           }}
           onColumnMoved={(params) => console.log(params)}
-          onCellFocused={(params) => {
-            // setCurrentFocus(ref);
-          }}
         />
       </div>
     </div>
