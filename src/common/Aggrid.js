@@ -82,7 +82,6 @@ const Aggrid = forwardRef((props, ref) => {
           getRowStyle={getRowStyle}
           onCellClicked={onCellClicked}
           onCellFocused={(params) => {
-            console.log(params);
             if (params.rowIndex !== null && params.column !== null)
               onCellFocused(params);
           }}

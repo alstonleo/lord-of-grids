@@ -1,35 +1,34 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import GlobalContext from "./common/GlobalContext";
 
 const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
-  const { enableGlobalNavigation, setEnableGlobalNavigation, setContextMap } =
+  const { setEnableGlobalNavigation, currentComponent } =
     useContext(GlobalContext);
   const searchref = useRef();
   const genderref = useRef();
   const gridref = useRef();
-  const [currentComponent, setCurrentComponent] = useState("");
+  const ctxMap = useMemo(() => {
+    return {
+      search: searchref,
+      gender: genderref,
+      main_grid: gridref,
+      default: searchref,
+    };
+  }, []);
   useEffect(() => {
-    if (enableGlobalNavigation)
-      setContextMap({
-        search: searchref,
-        gender: genderref,
-        main_grid: gridref,
-        default: searchref,
-      });
-  }, [setContextMap, enableGlobalNavigation]);
-  useEffect(() => {
-    console.log("current component", currentComponent);
-  }, [currentComponent]);
+    console.log("currentComponent", currentComponent);
+    if (currentComponent) {
+      ctxMap[currentComponent].current.focus();
+    }
+  }, [ctxMap, currentComponent]);
   return (
     <AppContext.Provider
       value={{
         searchref,
         genderref,
         gridref,
-        currentComponent,
-        setCurrentComponent,
         enableGlobalNavigation: (enable) => setEnableGlobalNavigation(enable),
       }}
     >
@@ -37,5 +36,4 @@ export const AppContextProvider = ({ children }) => {
     </AppContext.Provider>
   );
 };
-
 export default AppContext;

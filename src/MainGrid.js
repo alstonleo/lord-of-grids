@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useState,
   useRef,
+  useMemo,
 } from "react";
 import { Card } from "@mui/material";
 import Aggrid from "./common/Aggrid";
@@ -18,6 +19,7 @@ import {
   rowDown,
   rowUp,
   selectRow,
+  stopEditing,
 } from "./utils/gridUtils";
 import AppContext from "./AppContext";
 const AlternateNamesGridSelectComponent = ({
@@ -137,13 +139,15 @@ const MainGrid = () => {
   const [rowData, setRowData] = useState([]);
   const [api, setApi] = useState(null);
   const [columnApi, setColumnApi] = useState(null);
-  const { shiftKey, ctrlKey, autocompleteOpen } = useContext(GlobalContext);
   const {
-    gridref,
-    enableGlobalNavigation,
+    shiftKey,
+    ctrlKey,
+    altKey,
+    autocompleteOpen,
     currentComponent,
     setCurrentComponent,
-  } = useContext(AppContext);
+  } = useContext(GlobalContext);
+  const { gridref, enableGlobalNavigation } = useContext(AppContext);
   const columnDefs = [
     {
       headerName: "checked",
@@ -224,13 +228,28 @@ const MainGrid = () => {
       );
     },
   };
+  const mainGridMarkers = useMemo(() => {
+    return { up: "search", down: "gender", left: "gender", right: "search" };
+  }, []);
   const onGridReady = (params) => {
     setApi(params.api);
     setColumnApi(params.columnApi);
   };
-  const tabHandler = (shiftKey) => {
-    cellTabbed(api, shiftKey);
-  };
+  const gridEditingStopped = useCallback(
+    (direction) => {
+      stopEditing(api);
+      setCurrentComponent(mainGridMarkers[direction]);
+    },
+    [api, mainGridMarkers, setCurrentComponent]
+  );
+  const tabHandler = useCallback(
+    (shiftKey) => {
+      if (!cellTabbed(api, shiftKey)) {
+        gridEditingStopped(shiftKey ? "left" : "right");
+      }
+    },
+    [api, gridEditingStopped]
+  );
   const enterHandler = (rowIndex, shiftKey) => {
     api.getSelectedNodes()[0].data.selected_alternate_name = rowIndex;
     cellTabbed(api, shiftKey);
@@ -241,36 +260,41 @@ const MainGrid = () => {
       const key = e.key;
       if (key === "Tab" || key === "Enter") {
         e.preventDefault();
-        console.log("main grid tab");
-        if (!cellTabbed(api, shiftKey)) setCurrentComponent("");
+        tabHandler(shiftKey);
         return;
       }
       if (key === "ArrowDown") {
         e.preventDefault();
+        if (altKey) {
+          gridEditingStopped("down");
+          return;
+        }
         if (api.getFocusedCell().column.colDef.editable) {
           if (!rowDown(api, ctrlKey, api.getFocusedCell().column))
-            setCurrentComponent("");
+            gridEditingStopped("down");
           return;
         }
         if (!rowDown(api, ctrlKey, columnApi.getColumn("actor")))
-          setCurrentComponent("");
+          gridEditingStopped("down");
         return;
       }
       if (key === "ArrowUp") {
         e.preventDefault();
-        if (api.getFocusedCell().column.colDef.editable) {
-          console.log("calling rowup");
-          if (!rowUp(api, ctrlKey, api.getFocusedCell().column))
-            setCurrentComponent("");
+        if (altKey) {
+          gridEditingStopped("up");
           return;
         }
-        console.log("calling rowup 2");
+        if (api.getFocusedCell().column.colDef.editable) {
+          if (!rowUp(api, ctrlKey, api.getFocusedCell().column))
+            gridEditingStopped("up");
+          return;
+        }
         if (!rowUp(api, ctrlKey, columnApi.getColumn("actor")))
-          setCurrentComponent("");
+          gridEditingStopped("up");
         return;
       }
     },
-    [api, columnApi, ctrlKey, shiftKey, setCurrentComponent]
+    [api, columnApi, ctrlKey, shiftKey, altKey, tabHandler, gridEditingStopped]
   );
   useEffect(() => {
     fetch(`http://hp-api.herokuapp.com/api/characters/house/gryffindor`)
@@ -305,10 +329,9 @@ const MainGrid = () => {
       enableGlobalNavigation(true);
     };
   }, [currentComponent, enableGlobalNavigation]);
-  useEffect(() => {
-    api?.redrawRows();
-  }, [rowData, api]);
-
+  // useEffect(() => {
+  //   api?.redrawRows();
+  // }, [rowData, api]);
   return (
     <>
       <Card sx={{ height: "90vh", width: "100vw" }}>
@@ -330,7 +353,6 @@ const MainGrid = () => {
             }
           }}
           onCellFocused={(params) => {
-            console.log("onCellFocused", params);
             setCurrentComponent("main_grid");
           }}
           onCellClicked={(params) => {

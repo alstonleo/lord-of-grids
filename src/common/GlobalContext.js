@@ -8,8 +8,8 @@ export const GlobalContextProvider = ({ children }) => {
   const [altKey, setAltKey] = useState(false);
   const [escKey, setEscKey] = useState(false);
   const [autocompleteOpen, setAutocompleteOpen] = useState(false);
-  const [contextMap, setContextMap] = useState(null);
   const [enableGlobalNavigation, setEnableGlobalNavigation] = useState(true);
+  const [currentComponent, setCurrentComponent] = useState("");
   const globalKeyDownListener = useCallback((e) => {
     const key = e.key;
     const sKey = e.shiftKey;
@@ -26,63 +26,63 @@ export const GlobalContextProvider = ({ children }) => {
     setAltKey(aKey);
     setCtrlKey(cKey);
   }, []);
-  const globalKeyUpListener = useCallback(
-    (e) => {
-      const key = e.key;
-      const sKey = e.shiftKey;
-      const aKey = e.altKey;
-      const cKey = e.ctrlKey;
-      if (key === "Escape") {
-        e.preventDefault();
-        setEscKey(false);
-      }
-      setShiftKey(sKey);
-      setAltKey(aKey);
-      setCtrlKey(cKey);
-      if (!contextMap) return;
-      const el = document.activeElement;
-      const markers = el.getAttribute("markers")
-        ? JSON.parse(el.getAttribute("markers"))
-        : null;
-      console.log(markers);
-      if (key === "Tab" || key === "Enter") {
-        console.log("global tab");
-        e.preventDefault();
-        if (!markers) {
-          contextMap["default"].current.focus();
-          return;
-        }
-        if (sKey && markers.left) {
-          contextMap[markers.left].current.focus();
-          return;
-        }
-        if (markers.right) {
-          contextMap[markers.right].current.focus();
-          return;
-        }
-      }
-      if (key === "ArrowDown") {
-        e.preventDefault();
-        if (!markers) {
-          contextMap["default"].current.focus();
-          return;
-        }
-        if (aKey) contextMap[markers.down].current.focus();
+  const globalKeyUpListener = useCallback((e) => {
+    const key = e.key;
+    const sKey = e.shiftKey;
+    const aKey = e.altKey;
+    const cKey = e.ctrlKey;
+    if (key === "Escape") {
+      e.preventDefault();
+      setEscKey(false);
+    }
+    setShiftKey(sKey);
+    setAltKey(aKey);
+    setCtrlKey(cKey);
+    const el = document.activeElement;
+    const markers = el.getAttribute("markers")
+      ? JSON.parse(el.getAttribute("markers"))
+      : null;
+    if (key === "Tab" || key === "Enter") {
+      e.preventDefault();
+      if (!markers) {
+        setCurrentComponent("default");
         return;
       }
-      if (key === "ArrowUp") {
-        console.log("global arrowup");
-        e.preventDefault();
-        if (!markers) {
-          contextMap["default"].current.focus();
-          return;
-        }
-        if (aKey) contextMap[markers.up].current.focus();
+      if (sKey) {
+        if (markers.left) setCurrentComponent(markers.left);
         return;
       }
-    },
-    [contextMap]
-  );
+      if (markers.right) {
+        setCurrentComponent(markers.right);
+        return;
+      }
+    }
+    if (key === "ArrowDown") {
+      e.preventDefault();
+      if (!markers) {
+        setCurrentComponent("default");
+        return;
+      }
+      if (aKey) {
+        if (markers.down) setCurrentComponent(markers.down);
+        return;
+      }
+      return;
+    }
+    if (key === "ArrowUp") {
+      console.log("global arrowup");
+      e.preventDefault();
+      if (!markers) {
+        setCurrentComponent("default");
+        return;
+      }
+      if (aKey) {
+        if (markers.up) setCurrentComponent(markers.up);
+        return;
+      }
+      return;
+    }
+  }, []);
   useEffect(() => {
     document.addEventListener("keydown", globalKeyDownListener, false);
     if (enableGlobalNavigation) {
@@ -106,7 +106,8 @@ export const GlobalContextProvider = ({ children }) => {
         setAutocompleteOpen,
         enableGlobalNavigation,
         setEnableGlobalNavigation,
-        setContextMap,
+        currentComponent,
+        setCurrentComponent,
       }}
     >
       {children}

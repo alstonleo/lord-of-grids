@@ -1,11 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import AppContext from "./AppContext";
+import GlobalContext from "./common/GlobalContext";
 import SelectInput from "./common/SelectInput";
 import TextInput from "./common/TextInput";
 
 const Actors = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { searchref, genderref, setCurrentComponent } = useContext(AppContext);
+  const { setCurrentComponent } = useContext(GlobalContext);
+  const { searchref, genderref } = useContext(AppContext);
   useEffect(() => {
     searchref.current.focus();
   }, [searchref]);
