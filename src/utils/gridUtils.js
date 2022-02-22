@@ -8,6 +8,12 @@ export const focusCell = (api, rowIndex, column) => {
     selectRow(api, rowIndex);
   }
   if (column?.colDef?.editable) {
+    console.log(
+      api.getFocusedCell()?.rowIndex,
+      api.getFocusedCell()?.column?.colId,
+      rowIndex,
+      column?.colId
+    );
     if (
       api.getFocusedCell()?.rowIndex !== rowIndex ||
       api.getFocusedCell()?.column?.colId !== column?.colId
@@ -29,13 +35,18 @@ export const cellTabbed = (api, shiftKey) => {
         api.getFocusedCell().column
       );
     } else {
+      api.clearFocusedCell();
       api.stopEditing();
+      return false;
     }
   } else if (api.tabToNextCell()) {
     focusCell(api, api.getFocusedCell().rowIndex, api.getFocusedCell().column);
   } else {
+    api.clearFocusedCell();
     api.stopEditing();
+    return false;
   }
+  return true;
 };
 export const cellClicked = (api, rowIndex, column, ctrlKey = false) => {
   if (api.gridOptionsWrapper.isRowSelectionMulti()) {
@@ -61,9 +72,6 @@ export const cellClicked = (api, rowIndex, column, ctrlKey = false) => {
 */
 export const rowUp = (api, ctrlKey = false, column = null) => {
   const currentRow = api.getSelectedNodes()[0].rowIndex;
-  if (currentRow === 0) {
-    return;
-  }
   if (api.gridOptionsWrapper.isRowSelectionMulti()) {
     let isChecked = api.getRowNode(currentRow).data.checked || false;
     if (ctrlKey) {
@@ -73,17 +81,21 @@ export const rowUp = (api, ctrlKey = false, column = null) => {
     }
     api.getRowNode(currentRow).setSelected(false);
   }
+  console.log(currentRow);
+  if (currentRow === 0) {
+    api.clearFocusedCell();
+    api.stopEditing();
+    return false;
+  }
   if (column) {
     focusCell(api, currentRow - 1, column);
-    return;
+    return true;
   }
   selectRow(api, currentRow - 1);
+  return true;
 };
 export const rowDown = (api, ctrlKey = false, column = null) => {
   const currentRow = api.getSelectedNodes()[0].rowIndex;
-  if (currentRow === api.getDisplayedRowCount() - 1) {
-    return;
-  }
   if (api.gridOptionsWrapper.isRowSelectionMulti() && currentRow !== -1) {
     let isChecked = api.getRowNode(currentRow).data.checked || false;
     if (ctrlKey) {
@@ -93,9 +105,15 @@ export const rowDown = (api, ctrlKey = false, column = null) => {
     }
     api.getRowNode(currentRow).setSelected(false);
   }
+  if (currentRow === api.getDisplayedRowCount() - 1) {
+    api.clearFocusedCell();
+    api.stopEditing();
+    return false;
+  }
   if (column) {
     focusCell(api, currentRow + 1, column);
-    return;
+    return true;
   }
   selectRow(api, currentRow + 1);
+  return true;
 };

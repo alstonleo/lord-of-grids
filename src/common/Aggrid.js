@@ -22,9 +22,10 @@ const Aggrid = forwardRef((props, ref) => {
     animateRows = true,
     onGridReady = () => {},
     onRowDataChanged = () => {},
+    onSelectionChanged = () => {},
     getRowStyle = () => {},
     onCellClicked = () => {},
-    onSelectionChanged = () => {},
+    onCellFocused = () => {},
   } = props;
   const [api, setApi] = useState(null);
   const [columnApi, setColumnApi] = useState(null);
@@ -39,8 +40,10 @@ const Aggrid = forwardRef((props, ref) => {
         return !!api?.getFocusedCell();
       },
       focus: () => {
-        if (api.getDisplayedRowCount() > 0)
+        if (api.getDisplayedRowCount() > 0) {
+          console.log("focus");
           return focusCell(api, 0, columnApi.getAllDisplayedColumns()[0]);
+        }
       },
       blur: () => {
         api?.deselectAll();
@@ -72,13 +75,18 @@ const Aggrid = forwardRef((props, ref) => {
             params.api.sizeColumnsToFit();
             onRowDataChanged(params);
           }}
-          getRowStyle={getRowStyle}
-          onCellClicked={onCellClicked}
-          getRowHeight={(params) => (params.node.isSelected() ? 40 : 30)}
           onSelectionChanged={(params) => {
             params.api.resetRowHeights();
             onSelectionChanged(params);
           }}
+          getRowStyle={getRowStyle}
+          onCellClicked={onCellClicked}
+          onCellFocused={(params) => {
+            console.log(params);
+            if (params.rowIndex !== null && params.column !== null)
+              onCellFocused(params);
+          }}
+          getRowHeight={(params) => (params.node.isSelected() ? 40 : 30)}
           onColumnMoved={(params) => console.log(params)}
         />
       </div>

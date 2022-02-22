@@ -31,11 +31,12 @@ const SelectInput = React.forwardRef((props, ref) => {
     autoHighlight = true,
     disableClearable = true,
     blurOnSelect = false,
-    onChange = () => {},
     size = "medium",
     name,
     value,
+    onChange = () => {},
     onInputChange = () => {},
+    onFocus = () => {},
     getOptionLabel,
     isOptionEqualToValue,
     readOnly = false,
@@ -64,8 +65,8 @@ const SelectInput = React.forwardRef((props, ref) => {
         onInputChange={(event, value, reason) => {
           onInputChange(event, value, reason);
         }}
+        onFocus={onFocus}
         renderInput={(params) => {
-          console.log(params);
           return (
             <TextInput
               {...params}

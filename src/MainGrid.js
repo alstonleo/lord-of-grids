@@ -138,7 +138,12 @@ const MainGrid = () => {
   const [api, setApi] = useState(null);
   const [columnApi, setColumnApi] = useState(null);
   const { shiftKey, ctrlKey, autocompleteOpen } = useContext(GlobalContext);
-  const { gridref } = useContext(AppContext);
+  const {
+    gridref,
+    enableGlobalNavigation,
+    currentComponent,
+    setCurrentComponent,
+  } = useContext(AppContext);
   const columnDefs = [
     {
       headerName: "checked",
@@ -236,29 +241,36 @@ const MainGrid = () => {
       const key = e.key;
       if (key === "Tab" || key === "Enter") {
         e.preventDefault();
-        cellTabbed(api, shiftKey);
+        console.log("main grid tab");
+        if (!cellTabbed(api, shiftKey)) setCurrentComponent("");
         return;
       }
       if (key === "ArrowDown") {
         e.preventDefault();
         if (api.getFocusedCell().column.colDef.editable) {
-          rowDown(api, ctrlKey, api.getFocusedCell().column);
+          if (!rowDown(api, ctrlKey, api.getFocusedCell().column))
+            setCurrentComponent("");
           return;
         }
-        rowDown(api, ctrlKey, columnApi.getColumn("actor"));
+        if (!rowDown(api, ctrlKey, columnApi.getColumn("actor")))
+          setCurrentComponent("");
         return;
       }
       if (key === "ArrowUp") {
         e.preventDefault();
         if (api.getFocusedCell().column.colDef.editable) {
-          rowUp(api, ctrlKey, api.getFocusedCell().column);
+          console.log("calling rowup");
+          if (!rowUp(api, ctrlKey, api.getFocusedCell().column))
+            setCurrentComponent("");
           return;
         }
-        rowUp(api, ctrlKey, columnApi.getColumn("actor"));
+        console.log("calling rowup 2");
+        if (!rowUp(api, ctrlKey, columnApi.getColumn("actor")))
+          setCurrentComponent("");
         return;
       }
     },
-    [api, columnApi, ctrlKey, shiftKey]
+    [api, columnApi, ctrlKey, shiftKey, setCurrentComponent]
   );
   useEffect(() => {
     fetch(`http://hp-api.herokuapp.com/api/characters/house/gryffindor`)
@@ -280,12 +292,19 @@ const MainGrid = () => {
       });
   }, []);
   useEffect(() => {
-    if (!autocompleteOpen)
+    if (currentComponent === "main_grid" && !autocompleteOpen) {
       document.addEventListener("keyup", gridListener, false);
+    }
     return () => {
       document.removeEventListener("keyup", gridListener, false);
     };
-  }, [gridListener, autocompleteOpen, gridref]);
+  }, [gridref, currentComponent, autocompleteOpen, gridListener]);
+  useEffect(() => {
+    if (currentComponent === "main_grid") enableGlobalNavigation(false);
+    return () => {
+      enableGlobalNavigation(true);
+    };
+  }, [currentComponent, enableGlobalNavigation]);
   useEffect(() => {
     api?.redrawRows();
   }, [rowData, api]);
@@ -299,15 +318,6 @@ const MainGrid = () => {
           onGridReady={onGridReady}
           rowData={rowData}
           animateRows={false}
-          onRowDataChanged={(params) => {
-            if (params.api.getDisplayedRowCount() > 0) {
-              // focusCell(
-              //   params.api,
-              //   0,
-              //   params.columnApi.getAllDisplayedColumns()[0]
-              // );
-            }
-          }}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           frameworkComponents={{
@@ -319,7 +329,12 @@ const MainGrid = () => {
               return { background: "#c9defc" };
             }
           }}
+          onCellFocused={(params) => {
+            console.log("onCellFocused", params);
+            setCurrentComponent("main_grid");
+          }}
           onCellClicked={(params) => {
+            setCurrentComponent("main_grid");
             if (params.column.colDef.editable) {
               cellClicked(
                 params.api,

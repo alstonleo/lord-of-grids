@@ -44,8 +44,14 @@ export const GlobalContextProvider = ({ children }) => {
       const markers = el.getAttribute("markers")
         ? JSON.parse(el.getAttribute("markers"))
         : null;
+      console.log(markers);
       if (key === "Tab" || key === "Enter") {
+        console.log("global tab");
         e.preventDefault();
+        if (!markers) {
+          contextMap["default"].current.focus();
+          return;
+        }
         if (sKey && markers.left) {
           contextMap[markers.left].current.focus();
           return;
@@ -55,14 +61,23 @@ export const GlobalContextProvider = ({ children }) => {
           return;
         }
       }
-      if (aKey && key === "ArrowDown") {
+      if (key === "ArrowDown") {
         e.preventDefault();
-        contextMap[markers.down].current.focus();
+        if (!markers) {
+          contextMap["default"].current.focus();
+          return;
+        }
+        if (aKey) contextMap[markers.down].current.focus();
         return;
       }
-      if (aKey && key === "ArrowUp") {
+      if (key === "ArrowUp") {
+        console.log("global arrowup");
         e.preventDefault();
-        contextMap[markers.up].current.focus();
+        if (!markers) {
+          contextMap["default"].current.focus();
+          return;
+        }
+        if (aKey) contextMap[markers.up].current.focus();
         return;
       }
     },
