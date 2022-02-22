@@ -254,6 +254,9 @@ const MainGrid = () => {
   );
   const enterHandler = (rowIndex, shiftKey) => {
     api.getSelectedNodes()[0].data.selected_alternate_name = rowIndex;
+    api.redrawRows({
+      rowNodes: [api.getRowNode(rowIndex)],
+    });
     cellTabbed(api, shiftKey);
   };
   const gridListener = useCallback(
