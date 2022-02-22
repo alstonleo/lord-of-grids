@@ -217,7 +217,9 @@ const MainGrid = () => {
     cellEditorParams: (params) => {
       return {
         value: params.value,
-        onChange: (e) => console.log(e.target.value),
+        onChange: (e) => {
+          // console.log(e.target.value);
+        },
       };
     },
     cellRendererFramework: (params) => {
@@ -237,8 +239,8 @@ const MainGrid = () => {
   };
   const gridEditingStopped = useCallback(
     (direction) => {
-      stopEditing(api);
-      setCurrentComponent(mainGridMarkers[direction]);
+      if (api) stopEditing(api);
+      if (direction) setCurrentComponent(mainGridMarkers[direction]);
     },
     [api, mainGridMarkers, setCurrentComponent]
   );
@@ -324,14 +326,16 @@ const MainGrid = () => {
     };
   }, [gridref, currentComponent, autocompleteOpen, gridListener]);
   useEffect(() => {
-    if (currentComponent === "main_grid") enableGlobalNavigation(false);
+    if (currentComponent === "main_grid") {
+      enableGlobalNavigation(false);
+    }
     return () => {
       enableGlobalNavigation(true);
     };
   }, [currentComponent, enableGlobalNavigation]);
-  // useEffect(() => {
-  //   api?.redrawRows();
-  // }, [rowData, api]);
+  useEffect(() => {
+    if (currentComponent !== "main_grid") gridEditingStopped();
+  }, [currentComponent, gridEditingStopped]);
   return (
     <>
       <Card sx={{ height: "90vh", width: "100vw" }}>
@@ -355,24 +359,27 @@ const MainGrid = () => {
           onCellFocused={(params) => {
             setCurrentComponent("main_grid");
           }}
-          onCellClicked={(params) => {
-            setCurrentComponent("main_grid");
-            if (params.column.colDef.editable) {
-              cellClicked(
-                params.api,
-                params.node.rowIndex,
-                params.column,
-                ctrlKey
-              );
-            } else {
-              cellClicked(
-                params.api,
-                params.node.rowIndex,
-                params.columnApi.getColumn("actor"),
-                ctrlKey
-              );
-            }
-          }}
+          onCellClicked={useCallback(
+            (params) => {
+              setCurrentComponent("main_grid");
+              if (params.column.colDef.editable) {
+                cellClicked(
+                  params.api,
+                  params.node.rowIndex,
+                  params.column,
+                  ctrlKey
+                );
+              } else {
+                cellClicked(
+                  params.api,
+                  params.node.rowIndex,
+                  params.columnApi.getColumn("actor"),
+                  ctrlKey
+                );
+              }
+            },
+            [ctrlKey, setCurrentComponent]
+          )}
           onSelectionChanged={(params) => {
             params.api.resetRowHeights();
           }}

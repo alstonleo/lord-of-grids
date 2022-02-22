@@ -40,8 +40,12 @@ const Aggrid = forwardRef((props, ref) => {
         return !!api?.getFocusedCell();
       },
       focus: () => {
+        //in depth checks needed
+        // if row selected and has no editable column
+        // if row selected and has editable column, focus on first editable column
+        // if no row selected and focus called, select first row and first editable column, if editable column exists
+        // console.log(api);
         if (api.getDisplayedRowCount() > 0) {
-          console.log("focus");
           return focusCell(api, 0, columnApi.getAllDisplayedColumns()[0]);
         }
       },

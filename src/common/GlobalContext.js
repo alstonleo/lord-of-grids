@@ -26,7 +26,7 @@ export const GlobalContextProvider = ({ children }) => {
     setAltKey(aKey);
     setCtrlKey(cKey);
   }, []);
-  const globalKeyUpListener = useCallback((e) => {
+  const eventKeyUpListener = useCallback((e) => {
     const key = e.key;
     const sKey = e.shiftKey;
     const aKey = e.altKey;
@@ -38,63 +38,72 @@ export const GlobalContextProvider = ({ children }) => {
     setShiftKey(sKey);
     setAltKey(aKey);
     setCtrlKey(cKey);
-    const el = document.activeElement;
-    const markers = el.getAttribute("markers")
-      ? JSON.parse(el.getAttribute("markers"))
-      : null;
-    if (key === "Tab" || key === "Enter") {
-      e.preventDefault();
-      if (!markers) {
-        setCurrentComponent("default");
-        return;
-      }
-      if (sKey) {
-        if (markers.left) setCurrentComponent(markers.left);
-        return;
-      }
-      if (markers.right) {
-        setCurrentComponent(markers.right);
-        return;
-      }
-    }
-    if (key === "ArrowDown") {
-      e.preventDefault();
-      if (!markers) {
-        setCurrentComponent("default");
-        return;
-      }
-      if (aKey) {
-        if (markers.down) setCurrentComponent(markers.down);
-        return;
-      }
-      return;
-    }
-    if (key === "ArrowUp") {
-      console.log("global arrowup");
-      e.preventDefault();
-      if (!markers) {
-        setCurrentComponent("default");
-        return;
-      }
-      if (aKey) {
-        if (markers.up) setCurrentComponent(markers.up);
-        return;
-      }
-      return;
-    }
   }, []);
+  const globalKeyUpListener = useCallback(
+    (e) => {
+      const key = e.key;
+      const el = document.activeElement;
+      const markers = el.getAttribute("markers")
+        ? JSON.parse(el.getAttribute("markers"))
+        : null;
+      if (key === "Tab" || key === "Enter") {
+        e.preventDefault();
+        if (!markers) {
+          setCurrentComponent("default");
+          return;
+        }
+        if (shiftKey) {
+          if (markers.left) setCurrentComponent(markers.left);
+          return;
+        }
+        if (markers.right) {
+          setCurrentComponent(markers.right);
+          return;
+        }
+      }
+      if (key === "ArrowDown") {
+        e.preventDefault();
+        if (!markers) {
+          setCurrentComponent("default");
+          return;
+        }
+        if (altKey) {
+          if (markers.down) setCurrentComponent(markers.down);
+          return;
+        }
+        return;
+      }
+      if (key === "ArrowUp") {
+        e.preventDefault();
+        if (!markers) {
+          setCurrentComponent("default");
+          return;
+        }
+        if (altKey) {
+          if (markers.up) setCurrentComponent(markers.up);
+          return;
+        }
+        return;
+      }
+    },
+    [altKey, shiftKey]
+  );
   useEffect(() => {
     document.addEventListener("keydown", globalKeyDownListener, false);
-    if (enableGlobalNavigation) {
-      document.addEventListener("keyup", globalKeyUpListener, false);
-    } else {
-      document.removeEventListener("keyup", globalKeyUpListener, false);
-    }
+    document.addEventListener("keyup", eventKeyUpListener, false);
     return () => {
       document.removeEventListener("keydown", globalKeyDownListener, false);
+      document.removeEventListener("keyup", eventKeyUpListener, false);
+    };
+  }, [globalKeyDownListener, eventKeyUpListener]);
+  useEffect(() => {
+    if (enableGlobalNavigation) {
+      document.addEventListener("keyup", globalKeyUpListener, false);
+    }
+    return () => {
       document.removeEventListener("keyup", globalKeyUpListener, false);
     };
-  }, [enableGlobalNavigation, globalKeyDownListener, globalKeyUpListener]);
+  }, [enableGlobalNavigation, globalKeyUpListener]);
   return (
     <GlobalContext.Provider
       value={{
