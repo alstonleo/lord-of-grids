@@ -175,7 +175,7 @@ const MainGrid = () => {
     {
       headerName: "Alternate Names",
       field: "alternate_names",
-      editable: true,
+      editable: ctrlKey ? false : true,
       cellEditor: "cellGridSelect",
       cellEditorParams: (params) => {
         return {
