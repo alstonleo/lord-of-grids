@@ -36,10 +36,10 @@ const AlternateNamesGridSelectComponent = ({
   const [columnApi, setColumnApi] = useState(null);
   const filterRef = useRef();
   const enterHandler = useCallback(
-    (api) => {
+    (rowIndex) => {
       let selectedIndex = null;
       rowData.find((d, index) => {
-        if (d.id === api.getSelectedNodes()[0].data.id) {
+        if (d.id === api.getRowNode(rowIndex).data.id) {
           selectedIndex = index;
           return true;
         }
@@ -47,7 +47,7 @@ const AlternateNamesGridSelectComponent = ({
       });
       if (selectedIndex !== null) onEnter(selectedIndex, shiftKey);
     },
-    [rowData, shiftKey, onEnter]
+    [api, rowData, shiftKey, onEnter]
   );
   const gridListener = useCallback(
     (e) => {
@@ -63,7 +63,7 @@ const AlternateNamesGridSelectComponent = ({
       if (key === "Enter") {
         e.preventDefault();
         //Needs better logic
-        enterHandler(api);
+        enterHandler(currentRow);
         return;
       }
       if (key === "ArrowUp") {
@@ -129,7 +129,7 @@ const AlternateNamesGridSelectComponent = ({
                 params.columnApi.getAllDisplayedColumns()[0]
               );
           }}
-          onCellClicked={(params) => enterHandler(params.api)}
+          onCellClicked={(params) => enterHandler(params.node.rowIndex)}
         />
       </div>
     </div>
@@ -152,6 +152,24 @@ const MainGrid = () => {
     {
       headerName: "checked",
       field: "checked",
+      cellRendererFramework: (params) => {
+        return (
+          <div
+            style={{
+              height: 20,
+              width: 20,
+              cursor: "pointer",
+              background: params.data.checked ? "blue" : "red",
+            }}
+            onClick={() => {
+              params.data.checked = !params.data.checked;
+              api.redrawRows({
+                rowNodes: [api.getRowNode(params.node.rowIndex)],
+              });
+            }}
+          ></div>
+        );
+      },
       hide: true,
     },
     {
@@ -231,7 +249,11 @@ const MainGrid = () => {
     },
   };
   const mainGridMarkers = useMemo(() => {
-    return { up: "search", down: "gender", left: "gender", right: "search" };
+    return {
+      altDown: "search",
+      left: "gender",
+      right: "search",
+    };
   }, []);
   const onGridReady = (params) => {
     setApi(params.api);
@@ -254,7 +276,9 @@ const MainGrid = () => {
   );
   const enterHandler = (rowIndex, shiftKey) => {
     api.getSelectedNodes()[0].data.selected_alternate_name = rowIndex;
-    cellTabbed(api, shiftKey);
+    if (!cellTabbed(api, shiftKey)) {
+      gridEditingStopped(shiftKey ? "left" : "right");
+    }
   };
   const gridListener = useCallback(
     (e) => {
@@ -268,7 +292,7 @@ const MainGrid = () => {
       if (key === "ArrowDown") {
         e.preventDefault();
         if (altKey) {
-          gridEditingStopped("down");
+          gridEditingStopped("altDown");
           return;
         }
         if (api.getFocusedCell().column.colDef.editable) {
@@ -343,7 +367,7 @@ const MainGrid = () => {
           id="main_grid"
           ref={gridref}
           onGridReady={onGridReady}
-          rowData={rowData}
+          rowData={rowData.slice(0, -1)}
           animateRows={false}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
@@ -361,6 +385,7 @@ const MainGrid = () => {
           }}
           onCellClicked={useCallback(
             (params) => {
+              if (autocompleteOpen) return;
               setCurrentComponent("main_grid");
               if (params.column.colDef.editable) {
                 cellClicked(
@@ -373,16 +398,17 @@ const MainGrid = () => {
                 cellClicked(
                   params.api,
                   params.node.rowIndex,
-                  params.columnApi.getColumn("actor"),
+                  params.columnApi.getColumn("actor"), //any editable column or null if no editable columns
                   ctrlKey
                 );
               }
             },
-            [ctrlKey, setCurrentComponent]
+            [ctrlKey, setCurrentComponent, autocompleteOpen]
           )}
           onSelectionChanged={(params) => {
             params.api.resetRowHeights();
           }}
+          suppressRowClickSelection={ctrlKey ? true : false}
         />
       </Card>
     </>

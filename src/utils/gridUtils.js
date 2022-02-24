@@ -3,7 +3,8 @@ export const selectRow = (api, rowIndex) => {
   api.getDisplayedRowAtIndex(rowIndex)?.setSelected(true);
 };
 export const focusCell = (api, rowIndex, column) => {
-  if (!api.getRowNode(rowIndex).selected) {
+  const rowSelected = api.getRowNode(rowIndex).selected;
+  if (!rowSelected) {
     selectRow(api, rowIndex);
   }
   if (column?.colDef?.editable) {
@@ -38,38 +39,43 @@ export const cellTabbed = (api, shiftKey) => {
   return true;
 };
 export const cellClicked = (api, rowIndex, column, ctrlKey = false) => {
-  if (api.gridOptionsWrapper.isRowSelectionMulti()) {
+  // if (api.gridOptionsWrapper.isRowSelectionMulti()) {
+  // console.log(api);
+  if (ctrlKey) {
     let isChecked = api.getRowNode(rowIndex).data.checked || false;
-    if (ctrlKey) {
-      isChecked = !isChecked;
-      api.getRowNode(rowIndex).data.checked = isChecked;
-      api.redrawRows({
-        rowNodes: [api.getRowNode(rowIndex)],
-      });
-      if (api.getSelectedNodes().length > 1) {
-        api.getRowNode(rowIndex).setSelected(false);
-        return;
-      }
+    api.getRowNode(rowIndex).data.checked = !isChecked;
+    api.redrawRows({
+      rowNodes: [api.getRowNode(rowIndex)],
+    });
+    // if (api.getSelectedNodes().length > 1) {
+    //   api.getRowNode(rowIndex).setSelected(false);
+    //   return;
+    // }
+    api.getRowNode(rowIndex).setSelected(false);
+    if (api.getSelectedNodes().length === 0) {
       api.getRowNode(rowIndex).setSelected(true);
-      return;
     }
+    return;
   }
-  if (column) focusCell(api, rowIndex, column);
+  // }
+  if (column) {
+    // if (api.getSelectedNodes().length > 1) api.deselectAll();
+    focusCell(api, rowIndex, column);
+  }
 };
 /*
-  column: optional parameter. mandatory if grid has editable cells
+  column: optional parameter. mandatory if cell is editable
 */
 export const rowUp = (api, ctrlKey = false, column = null) => {
   const currentRow = api.getSelectedNodes()[0].rowIndex;
-  if (api.gridOptionsWrapper.isRowSelectionMulti()) {
+  // if (api.gridOptionsWrapper.isRowSelectionMulti()) {
+  if (ctrlKey) {
     let isChecked = api.getRowNode(currentRow).data.checked || false;
-    if (ctrlKey) {
-      isChecked = !isChecked;
-      api.getRowNode(currentRow).data.checked = isChecked;
-      api.redrawRows({ rowNodes: [api.getRowNode(currentRow)] });
-    }
-    api.getRowNode(currentRow).setSelected(false);
+    api.getRowNode(currentRow).data.checked = !isChecked;
+    api.redrawRows({ rowNodes: [api.getRowNode(currentRow)] });
   }
+  // api.getRowNode(currentRow).setSelected(false);
+  // }
   if (currentRow === 0) {
     return false;
   }
@@ -82,15 +88,14 @@ export const rowUp = (api, ctrlKey = false, column = null) => {
 };
 export const rowDown = (api, ctrlKey = false, column = null) => {
   const currentRow = api.getSelectedNodes()[0].rowIndex;
-  if (api.gridOptionsWrapper.isRowSelectionMulti() && currentRow !== -1) {
+  // if (api.gridOptionsWrapper.isRowSelectionMulti() && currentRow !== -1) {
+  if (ctrlKey) {
     let isChecked = api.getRowNode(currentRow).data.checked || false;
-    if (ctrlKey) {
-      isChecked = !isChecked;
-      api.getRowNode(currentRow).data.checked = isChecked;
-      api.redrawRows({ rowNodes: [api.getRowNode(currentRow)] });
-    }
-    api.getRowNode(currentRow).setSelected(false);
+    api.getRowNode(currentRow).data.checked = !isChecked;
+    api.redrawRows({ rowNodes: [api.getRowNode(currentRow)] });
   }
+  // api.getRowNode(currentRow).setSelected(false);
+  // }
   if (currentRow === api.getDisplayedRowCount() - 1) {
     return false;
   }

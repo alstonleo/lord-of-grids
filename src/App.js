@@ -19,10 +19,10 @@ function App() {
               width: "100%",
             }}
           >
-            <Actors />
             <div style={{ width: "100%", height: "95%" }}>
               <MainGrid />
             </div>
+            <Actors />
           </div>
         </Card>
       </AppContextProvider>

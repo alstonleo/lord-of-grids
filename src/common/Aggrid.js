@@ -13,12 +13,13 @@ const Aggrid = forwardRef((props, ref) => {
     defaultColDef,
     frameworkComponents,
     quickFilterText,
-    rowSelection = "multiple",
+    rowSelection = "single",
     singleClickEdit = true,
     enableRangeSelection = false,
-    suppressCellSelection = true,
     stopEditingWhenCellsLoseFocus = false,
     suppressHorizontalScroll = true,
+    suppressCellSelection = true,
+    suppressRowClickSelection = false,
     animateRows = true,
     onGridReady = () => {},
     onRowDataChanged = () => {},
@@ -40,12 +41,16 @@ const Aggrid = forwardRef((props, ref) => {
         return !!api?.getFocusedCell();
       },
       focus: () => {
-        //in depth checks needed
-        // if row selected and has no editable column
-        // if row selected and has editable column, focus on first editable column
-        // if no row selected and focus called, select first row and first editable column, if editable column exists
-        // console.log(api);
         if (api.getDisplayedRowCount() > 0) {
+          if (api.getFocusedCell()) {
+            return focusCell(
+              api,
+              api.getFocusedCell().rowIndex,
+              api.getFocusedCell().column.colDef.editable
+                ? api.getFocusedCell().column
+                : columnApi.getAllDisplayedColumns()[0]
+            );
+          }
           return focusCell(api, 0, columnApi.getAllDisplayedColumns()[0]);
         }
       },
@@ -67,9 +72,10 @@ const Aggrid = forwardRef((props, ref) => {
           singleClickEdit={singleClickEdit}
           enableRangeSelection={enableRangeSelection}
           columnDefs={columnDefs}
-          suppressCellSelection={suppressCellSelection}
           stopEditingWhenCellsLoseFocus={stopEditingWhenCellsLoseFocus}
           suppressHorizontalScroll={suppressHorizontalScroll}
+          suppressCellSelection={suppressCellSelection}
+          suppressRowClickSelection={suppressRowClickSelection}
           defaultColDef={defaultColDef}
           frameworkComponents={frameworkComponents}
           quickFilterText={quickFilterText}
@@ -89,8 +95,8 @@ const Aggrid = forwardRef((props, ref) => {
             if (params.rowIndex !== null && params.column !== null)
               onCellFocused(params);
           }}
-          getRowHeight={(params) => (params.node.isSelected() ? 40 : 30)}
           onColumnMoved={(params) => console.log(params)}
+          getRowHeight={(params) => (params.node.isSelected() ? 40 : 30)}
         />
       </div>
     </div>

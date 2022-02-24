@@ -68,9 +68,10 @@ export const GlobalContextProvider = ({ children }) => {
           return;
         }
         if (altKey) {
-          if (markers.down) setCurrentComponent(markers.down);
+          if (markers.altDown) setCurrentComponent(markers.altDown);
           return;
         }
+        if (markers.down) setCurrentComponent(markers.down);
         return;
       }
       if (key === "ArrowUp") {
@@ -80,9 +81,10 @@ export const GlobalContextProvider = ({ children }) => {
           return;
         }
         if (altKey) {
-          if (markers.up) setCurrentComponent(markers.up);
+          if (markers.altUp) setCurrentComponent(markers.altUp);
           return;
         }
+        if (markers.up) setCurrentComponent(markers.up);
         return;
       }
     },

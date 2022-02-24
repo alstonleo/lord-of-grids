@@ -31,7 +31,8 @@ const Actors = () => {
           inputProps={{
             markers: JSON.stringify({
               right: "gender",
-              down: "main_grid",
+              // up: "main_grid",
+              altUp: "main_grid",
             }),
           }}
         />
@@ -51,7 +52,8 @@ const Actors = () => {
           markers={JSON.stringify({
             left: "search",
             right: "main_grid",
-            down: "main_grid",
+            up: "main_grid",
+            // altUp: "main_grid",
           })}
         />
       </div>
