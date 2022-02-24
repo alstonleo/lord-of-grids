@@ -52,13 +52,13 @@ const Aggrid = forwardRef((props, ref) => {
                     ? api.getFocusedCell().column
                     : columnApi.getAllDisplayedColumns()[0]
                 ),
-              10
+              0
             );
             return;
           }
           setTimeout(
             () => focusCell(api, 0, columnApi.getAllDisplayedColumns()[0]),
-            10
+            0
           );
         }
       },
