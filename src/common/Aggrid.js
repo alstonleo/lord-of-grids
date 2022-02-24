@@ -43,15 +43,23 @@ const Aggrid = forwardRef((props, ref) => {
       focus: () => {
         if (api.getDisplayedRowCount() > 0) {
           if (api.getFocusedCell()) {
-            return focusCell(
-              api,
-              api.getFocusedCell().rowIndex,
-              api.getFocusedCell().column.colDef.editable
-                ? api.getFocusedCell().column
-                : columnApi.getAllDisplayedColumns()[0]
+            setTimeout(
+              () =>
+                focusCell(
+                  api,
+                  api.getFocusedCell().rowIndex,
+                  api.getFocusedCell().column.colDef.editable
+                    ? api.getFocusedCell().column
+                    : columnApi.getAllDisplayedColumns()[0]
+                ),
+              10
             );
+            return;
           }
-          return focusCell(api, 0, columnApi.getAllDisplayedColumns()[0]);
+          setTimeout(
+            () => focusCell(api, 0, columnApi.getAllDisplayedColumns()[0]),
+            10
+          );
         }
       },
       blur: () => {
