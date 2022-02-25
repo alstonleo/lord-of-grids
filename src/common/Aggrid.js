@@ -1,6 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
-// import "ag-grid-enterprise";
 import "ag-grid-community/dist/styles/ag-grid.min.css";
 import "ag-grid-community/dist/styles/ag-theme-balham.min.css";
 import "./Aggrid.css";
@@ -42,24 +41,19 @@ const Aggrid = forwardRef((props, ref) => {
       },
       focus: () => {
         if (api.getDisplayedRowCount() > 0) {
-          if (api.getFocusedCell()) {
-            setTimeout(
-              () =>
-                focusCell(
-                  api,
-                  api.getFocusedCell().rowIndex,
-                  api.getFocusedCell().column.colDef.editable
-                    ? api.getFocusedCell().column
-                    : columnApi.getAllDisplayedColumns()[0]
-                ),
-              0
-            );
-            return;
-          }
           setTimeout(
-            () => focusCell(api, 0, columnApi.getAllDisplayedColumns()[0]),
+            () =>
+              focusCell(
+                api,
+                api.getFocusedCell() ? api.getFocusedCell().rowIndex : 0,
+                api.getFocusedCell() &&
+                  api.getFocusedCell().column.colDef.editable
+                  ? api.getFocusedCell().column
+                  : columnApi.getAllDisplayedColumns()[0]
+              ),
             0
           );
+          return;
         }
       },
       blur: () => {
