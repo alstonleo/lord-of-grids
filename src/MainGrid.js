@@ -22,6 +22,7 @@ import {
   stopEditing,
 } from "./utils/gridUtils";
 import AppContext from "./AppContext";
+import Checkbox from "./common/Checkbox";
 const AlternateNamesGridSelectComponent = ({
   rowData,
   columnDefs,
@@ -78,19 +79,19 @@ const AlternateNamesGridSelectComponent = ({
     [shiftKey, api, onTab, enterHandler]
   );
   useEffect(() => {
-    filterRef.current.focus({ preventScroll: true });
-  }, []);
-  useEffect(() => {
     document.addEventListener("keyup", gridListener, false);
     return () => {
       document.removeEventListener("keyup", gridListener, false);
     };
   }, [gridListener]);
   useEffect(() => {
-    if (filterText && api.getDisplayedRowCount() > 0) {
+    if (filterText && api?.getDisplayedRowCount() > 0) {
       selectRow(api, 0);
     }
   }, [filterText, api, columnApi]);
+  useEffect(() => {
+    filterRef.current.focus({ preventScroll: true });
+  }, []);
   return (
     <div
       style={{
@@ -139,6 +140,7 @@ const MainGrid = () => {
   const [rowData, setRowData] = useState([]);
   const [api, setApi] = useState(null);
   const [columnApi, setColumnApi] = useState(null);
+  const [allRowsChecked, setAllRowsChecked] = useState(false);
   const {
     shiftKey,
     ctrlKey,
@@ -152,25 +154,37 @@ const MainGrid = () => {
     {
       headerName: "checked",
       field: "checked",
+      editable: false,
+      width: 50,
       cellRendererFramework: (params) => {
         return (
-          <div
-            style={{
-              height: 20,
-              width: 20,
-              cursor: "pointer",
-              background: params.data.checked ? "blue" : "red",
-            }}
-            onClick={() => {
-              params.data.checked = !params.data.checked;
+          <Checkbox
+            sx={{ marginLeft: 0.8 }}
+            checked={params.data.checked}
+            onChange={(event) => {
+              params.data.checked = event.target.checked;
               api.redrawRows({
                 rowNodes: [api.getRowNode(params.node.rowIndex)],
               });
             }}
-          ></div>
+          />
         );
       },
-      hide: true,
+      headerComponentFramework: (params) => {
+        return (
+          <Checkbox
+            checked={allRowsChecked}
+            onChange={(event) => {
+              api.forEachNode((node) => {
+                node.data.checked = event.target.checked;
+                api.redrawRows({ rowNodes: [api.getRowNode(node.rowIndex)] });
+              });
+              setAllRowsChecked(event.target.checked);
+            }}
+          />
+        );
+      },
+      // hide: true,
     },
     {
       headerName: "Actor Name",
@@ -199,24 +213,24 @@ const MainGrid = () => {
         return {
           value: params.value,
           autocompleteWidth: "70%",
-          component: AlternateNamesGridSelectComponent,
-          componentProps: {
-            selectedIndex: params.data.selected_alternate_name,
-            rowData: params.data.alternate_names,
-            columnDefs: [
-              {
-                headerName: "ID",
-                field: "id",
-              },
-              {
-                headerName: "Alternate Name",
-                field: "name",
-              },
-            ],
-            defaultColDef: [],
-            onTab: tabHandler,
-            onEnter: enterHandler,
-          },
+          component: (
+            <AlternateNamesGridSelectComponent
+              selectedIndex={params.data.selected_alternate_name}
+              rowData={params.data.alternate_names}
+              columnDefs={[
+                {
+                  headerName: "ID",
+                  field: "id",
+                },
+                {
+                  headerName: "Alternate Name",
+                  field: "name",
+                },
+              ]}
+              onTab={tabHandler}
+              onEnter={enterHandler}
+            />
+          ),
         };
       },
       valueGetter: (params) => {

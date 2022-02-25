@@ -1,5 +1,6 @@
 import React, {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -7,16 +8,15 @@ import React, {
 } from "react";
 import TextInput from "./TextInput";
 import Autocomplete from "./Autocomplete";
+import _ from "lodash";
 const CellGridSelect = forwardRef((props, ref) => {
-  const {
-    value,
-    autocompleteWidth = "100%",
-    component,
-    componentProps,
-  } = props;
-  const [show, setShow] = useState(true);
+  const { value, autocompleteWidth = "100%", component } = props;
+  const [show, setShow] = useState(false);
   const [controlledValue, setControlledValue] = useState(value);
   const cellref = useRef();
+  const showAC = useCallback(() => {
+    setShow(true);
+  }, []);
   useImperativeHandle(ref, () => {
     return { getValue: () => controlledValue, isCancelAfterEnd: () => false };
   });
@@ -24,10 +24,13 @@ const CellGridSelect = forwardRef((props, ref) => {
     setControlledValue(value);
   }, [value]);
   useEffect(() => {
+    const debounce = _.debounce(showAC, 200);
+    debounce();
     return () => {
       setShow(false);
+      debounce.cancel();
     };
-  }, []);
+  }, [showAC]);
   return (
     <>
       <TextInput
@@ -36,7 +39,7 @@ const CellGridSelect = forwardRef((props, ref) => {
         readOnly
       />
       <Autocomplete width={autocompleteWidth} show={show}>
-        {component(componentProps)}
+        {show && component}
       </Autocomplete>
     </>
   );

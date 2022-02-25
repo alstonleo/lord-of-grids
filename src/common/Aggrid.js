@@ -49,6 +49,8 @@ const Aggrid = forwardRef((props, ref) => {
                 api.getFocusedCell() &&
                   api.getFocusedCell().column.colDef.editable
                   ? api.getFocusedCell().column
+                  : columnApi.getAllDisplayedColumns()[0].colId === "checked"
+                  ? columnApi.getAllDisplayedColumns()[1]
                   : columnApi.getAllDisplayedColumns()[0]
               ),
             0
@@ -74,11 +76,11 @@ const Aggrid = forwardRef((props, ref) => {
           singleClickEdit={singleClickEdit}
           enableRangeSelection={enableRangeSelection}
           columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
           stopEditingWhenCellsLoseFocus={stopEditingWhenCellsLoseFocus}
           suppressHorizontalScroll={suppressHorizontalScroll}
           suppressCellSelection={suppressCellSelection}
           suppressRowClickSelection={suppressRowClickSelection}
-          defaultColDef={defaultColDef}
           frameworkComponents={frameworkComponents}
           quickFilterText={quickFilterText}
           animateRows={animateRows}
