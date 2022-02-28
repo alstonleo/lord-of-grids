@@ -40,13 +40,13 @@ const AlternateNamesGridSelectComponent = ({
     (rowIndex) => {
       let selectedIndex = null;
       rowData.find((d, index) => {
-        if (d.id === api.getRowNode(rowIndex).data.id) {
+        if (d.id === api.getDisplayedRowAtIndex(rowIndex).data.id) {
           selectedIndex = index;
+          onEnter(selectedIndex, shiftKey);
           return true;
         }
         return false;
       });
-      if (selectedIndex !== null) onEnter(selectedIndex, shiftKey);
     },
     [api, rowData, shiftKey, onEnter]
   );
